@@ -77,6 +77,9 @@ export default function App() {
   ]);
   const [requireHitlForNewMerchants, setRequireHitlForNewMerchants] = useState(true);
 
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'config' | 'mandates'>('config');
+
   // Scenario State
   const [customAmount, setCustomAmount] = useState(100);
   const [customMerchant, setCustomMerchant] = useState('');
@@ -165,171 +168,345 @@ export default function App() {
       {/* LEFT PANEL: Configuration */}
       <div className="panel panel-left">
         <div className="panel-header">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-indigo-600 rounded-lg">
-                <Settings size={24} className="text-white" />
+                <Shield size={24} className="text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-black">Mandate Configuration</h1>
-                <p className="text-sm text-muted">Customize your governance rules</p>
+                <h1 className="text-xl font-black text-white">Governance Control</h1>
+                <p className="text-sm text-muted">Configure and explore mandates</p>
               </div>
             </div>
-            <button onClick={resetToDefaults} className="btn btn-secondary btn-sm">
-              <RotateCcw size={16} />
-              Reset
+            {activeTab === 'config' && (
+              <button onClick={resetToDefaults} className="btn btn-secondary btn-sm">
+                <RotateCcw size={16} />
+                Reset
+              </button>
+            )}
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('config')}
+              className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'config'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-transparent text-secondary hover:bg-white/5'
+                }`}
+            >
+              <Settings size={16} className="inline mr-2" />
+              Configuration
+            </button>
+            <button
+              onClick={() => setActiveTab('mandates')}
+              className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'mandates'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-transparent text-secondary hover:bg-white/5'
+                }`}
+            >
+              <Shield size={16} className="inline mr-2" />
+              Mandates
             </button>
           </div>
         </div>
 
         <div className="panel-content">
-          {/* Value Limits */}
-          <div className="control-group">
-            <label className="control-label flex items-center gap-2">
-              <DollarSign size={16} className="text-indigo-400" />
-              Value Limits
-            </label>
-
-            <div className="card mb-4">
-              <label className="text-sm font-semibold mb-2 block">Auto-Approve Threshold</label>
-              <div className="slider-container">
-                <input
-                  type="range"
-                  min="0"
-                  max="500"
-                  step="25"
-                  value={autoApproveLimit}
-                  onChange={(e) => setAutoApproveLimit(Number(e.target.value))}
-                  className="slider"
-                  style={{ '--value': `${(autoApproveLimit / 500) * 100}%` } as any}
-                />
-                <div className="slider-value">
-                  <span className="text-muted">$0</span>
-                  <span className="slider-value-current">${autoApproveLimit}</span>
-                  <span className="text-muted">$500</span>
-                </div>
-              </div>
-              <p className="control-description">
-                Transactions below this amount are approved automatically (if other rules pass).
-              </p>
-            </div>
-
-            <div className="card">
-              <label className="text-sm font-semibold mb-2 block">HITL Threshold</label>
-              <div className="slider-container">
-                <input
-                  type="range"
-                  min="100"
-                  max="5000"
-                  step="100"
-                  value={hitlLimit}
-                  onChange={(e) => setHitlLimit(Number(e.target.value))}
-                  className="slider"
-                  style={{ '--value': `${((hitlLimit - 100) / 4900) * 100}%` } as any}
-                />
-                <div className="slider-value">
-                  <span className="text-muted">$100</span>
-                  <span className="slider-value-current">${hitlLimit}</span>
-                  <span className="text-muted">$5,000</span>
-                </div>
-              </div>
-              <p className="control-description">
-                Transactions above this amount require human approval.
-              </p>
-            </div>
-          </div>
-
-          {/* Merchant Allowlist */}
-          <div className="control-group">
-            <label className="control-label flex items-center gap-2">
-              <Store size={16} className="text-emerald-400" />
-              Trusted Merchants
-            </label>
-
-            <div className="card">
-              <div className="flex gap-2 mb-3">
-                <input
-                  type="text"
-                  value={merchantInput}
-                  onChange={(e) => setMerchantInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addTrustedMerchant()}
-                  placeholder="Add merchant name..."
-                  className="input-field"
-                />
-                <button onClick={addTrustedMerchant} className="btn btn-primary">
-                  <Plus size={16} />
-                </button>
-              </div>
-
-              <div className="tag-list">
-                {trustedMerchants.length > 0 ? (
-                  trustedMerchants.map(merchant => (
-                    <div key={merchant} className="tag">
-                      <span>{merchant}</span>
-                      <X
-                        size={14}
-                        className="tag-remove"
-                        onClick={() => removeTrustedMerchant(merchant)}
-                      />
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-muted text-sm italic">No trusted merchants added</p>
-                )}
-              </div>
-
-              <p className="control-description mt-3">
-                Merchants on this list bypass certain restrictions for routine transactions.
-              </p>
-            </div>
-          </div>
-
-          {/* Category Restrictions */}
-          <div className="control-group">
-            <label className="control-label flex items-center gap-2">
-              <Tag size={16} className="text-rose-400" />
-              Forbidden Categories
-            </label>
-
-            <div className="card">
-              <div className="tag-list">
-                {forbiddenCategories.map(cat => (
-                  <div key={cat} className="tag" style={{ borderColor: '#ef4444', background: 'rgba(239, 68, 68, 0.1)' }}>
-                    <Lock size={14} />
-                    <span>{cat}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="control-description mt-3">
-                Transactions in these categories are always blocked, no exceptions.
-              </p>
-            </div>
-          </div>
-
-          {/* HITL Triggers */}
-          <div className="control-group">
-            <label className="control-label flex items-center gap-2">
-              <UserCheck size={16} className="text-amber-400" />
-              HITL Triggers
-            </label>
-
-            <div className="card">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <p className="text-sm font-semibold">New Merchant Review</p>
-                  <p className="text-xs text-muted">Require approval for first-time vendors</p>
-                </div>
-                <label className="toggle">
-                  <input
-                    type="checkbox"
-                    checked={requireHitlForNewMerchants}
-                    onChange={(e) => setRequireHitlForNewMerchants(e.target.checked)}
-                  />
-                  <span className="toggle-slider"></span>
+          {activeTab === 'config' && (
+            <>
+              {/* Value Limits */}
+              <div className="control-group">
+                <label className="control-label flex items-center gap-2">
+                  <DollarSign size={16} className="text-indigo-400" />
+                  Value Limits
                 </label>
+
+                <div className="card mb-4">
+                  <label className="text-sm font-semibold mb-2 block text-white">Auto-Approve Threshold</label>
+                  <div className="slider-container">
+                    <input
+                      type="range"
+                      min="0"
+                      max="500"
+                      step="25"
+                      value={autoApproveLimit}
+                      onChange={(e) => setAutoApproveLimit(Number(e.target.value))}
+                      className="slider"
+                      style={{ '--value': `${(autoApproveLimit / 500) * 100}%` } as any}
+                    />
+                    <div className="slider-value">
+                      <span className="text-muted">$0</span>
+                      <span className="slider-value-current">${autoApproveLimit}</span>
+                      <span className="text-muted">$500</span>
+                    </div>
+                  </div>
+                  <p className="control-description">
+                    Transactions below this amount are approved automatically (if other rules pass).
+                  </p>
+                </div>
+
+                <div className="card">
+                  <label className="text-sm font-semibold mb-2 block text-white">HITL Threshold</label>
+                  <div className="slider-container">
+                    <input
+                      type="range"
+                      min="100"
+                      max="5000"
+                      step="100"
+                      value={hitlLimit}
+                      onChange={(e) => setHitlLimit(Number(e.target.value))}
+                      className="slider"
+                      style={{ '--value': `${((hitlLimit - 100) / 4900) * 100}%` } as any}
+                    />
+                    <div className="slider-value">
+                      <span className="text-muted">$100</span>
+                      <span className="slider-value-current">${hitlLimit}</span>
+                      <span className="text-muted">$5,000</span>
+                    </div>
+                  </div>
+                  <p className="control-description">
+                    Transactions above this amount require human approval.
+                  </p>
+                </div>
+              </div>
+
+              {/* Merchant Allowlist */}
+              <div className="control-group">
+                <label className="control-label flex items-center gap-2">
+                  <Store size={16} className="text-emerald-400" />
+                  Trusted Merchants
+                </label>
+
+                <div className="card">
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="text"
+                      value={merchantInput}
+                      onChange={(e) => setMerchantInput(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addTrustedMerchant()}
+                      placeholder="Add merchant name..."
+                      className="input-field"
+                    />
+                    <button onClick={addTrustedMerchant} className="btn btn-primary">
+                      <Plus size={16} />
+                    </button>
+                  </div>
+
+                  <div className="tag-list">
+                    {trustedMerchants.length > 0 ? (
+                      trustedMerchants.map(merchant => (
+                        <div key={merchant} className="tag">
+                          <span>{merchant}</span>
+                          <X
+                            size={14}
+                            className="tag-remove"
+                            onClick={() => removeTrustedMerchant(merchant)}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-muted text-sm italic">No trusted merchants added</p>
+                    )}
+                  </div>
+
+                  <p className="control-description mt-3">
+                    Merchants on this list bypass certain restrictions for routine transactions.
+                  </p>
+                </div>
+              </div>
+
+              {/* Category Restrictions */}
+              <div className="control-group">
+                <label className="control-label flex items-center gap-2">
+                  <Tag size={16} className="text-rose-400" />
+                  Forbidden Categories
+                </label>
+
+                <div className="card">
+                  <div className="tag-list">
+                    {forbiddenCategories.map(cat => (
+                      <div key={cat} className="tag" style={{ borderColor: '#ef4444', background: 'rgba(239, 68, 68, 0.1)' }}>
+                        <Lock size={14} />
+                        <span>{cat}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="control-description mt-3">
+                    Transactions in these categories are always blocked, no exceptions.
+                  </p>
+                </div>
+              </div>
+
+              {/* HITL Triggers */}
+              <div className="control-group">
+                <label className="control-label flex items-center gap-2">
+                  <UserCheck size={16} className="text-amber-400" />
+                  HITL Triggers
+                </label>
+
+                <div className="card">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-sm font-semibold text-white">New Merchant Review</p>
+                      <p className="text-xs text-muted">Require approval for first-time vendors</p>
+                    </div>
+                    <label className="toggle">
+                      <input
+                        type="checkbox"
+                        checked={requireHitlForNewMerchants}
+                        onChange={(e) => setRequireHitlForNewMerchants(e.target.checked)}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'mandates' && (
+            <div className="space-y-4">
+              <p className="text-sm text-secondary mb-6">
+                These mandates define the governance rules that protect against various risks. Each mandate has specific parameters and enforcement levels.
+              </p>
+
+              {/* Spending Limit Mandates */}
+              <div className="card">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2 bg-indigo-600/20 rounded-lg">
+                    <DollarSign size={20} className="text-indigo-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-lg text-white">Confirmation Threshold</h3>
+                      <span className="badge badge-warning text-xs">fagf-limit-01</span>
+                    </div>
+                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.confirmationThreshold.description}</p>
+                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
+                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
+                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.confirmationThreshold.riskDisclosure}</p>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs text-muted">Current: ${autoApproveLimit}</span>
+                      <span className={`text-xs px-2 py-1 rounded ${DEFAULT_MAS_MANDATES.confirmationThreshold.enforcement === 'approval_required'
+                        ? 'bg-amber-600/20 text-amber-400'
+                        : 'bg-rose-600/20 text-rose-400'
+                        }`}>
+                        {DEFAULT_MAS_MANDATES.confirmationThreshold.enforcement.replace('_', ' ').toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2 bg-indigo-600/20 rounded-lg">
+                    <DollarSign size={20} className="text-indigo-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-lg text-white">Daily Aggregate Limit</h3>
+                      <span className="badge badge-danger text-xs">fagf-limit-02</span>
+                    </div>
+                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.dailyAggregateLimit.description}</p>
+                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
+                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
+                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.dailyAggregateLimit.riskDisclosure}</p>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs text-muted">Current: ${hitlLimit}</span>
+                      <span className="text-xs px-2 py-1 rounded bg-rose-600/20 text-rose-400">
+                        BLOCK
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Authorization Mandates */}
+              <div className="card">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2 bg-emerald-600/20 rounded-lg">
+                    <UserCheck size={20} className="text-emerald-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-lg text-white">New Merchant Authorization</h3>
+                      <span className="badge badge-warning text-xs">fagf-auth-01</span>
+                    </div>
+                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.newMerchantAuth.description}</p>
+                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
+                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
+                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.newMerchantAuth.riskDisclosure}</p>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs text-muted">Status: {requireHitlForNewMerchants ? 'Enabled' : 'Disabled'}</span>
+                      <span className="text-xs px-2 py-1 rounded bg-amber-600/20 text-amber-400">
+                        APPROVAL REQUIRED
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Category Restrictions */}
+              <div className="card">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2 bg-rose-600/20 rounded-lg">
+                    <Lock size={20} className="text-rose-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-lg text-white">Category Restrictions</h3>
+                      <span className="badge badge-danger text-xs">fagf-cat-01</span>
+                    </div>
+                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.blockedCategories.description}</p>
+                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
+                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
+                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.blockedCategories.riskDisclosure}</p>
+                    </div>
+                    <div className="mt-3">
+                      <p className="text-xs text-muted mb-2">Blocked Categories:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {forbiddenCategories.map(cat => (
+                          <span key={cat} className="text-xs px-2 py-1 rounded bg-rose-600/20 text-rose-400 border border-rose-500/30">
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Velocity Controls */}
+              <div className="card">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2 bg-amber-600/20 rounded-lg">
+                    <Zap size={20} className="text-amber-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-lg text-white">Rate Limiting</h3>
+                      <span className="badge badge-warning text-xs">fagf-velocity-01</span>
+                    </div>
+                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.rateLimitPerHour.description}</p>
+                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
+                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
+                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.rateLimitPerHour.riskDisclosure}</p>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs text-muted">Limit: {DEFAULT_MAS_MANDATES.rateLimitPerHour.parameter} tx/hour</span>
+                      <span className="text-xs px-2 py-1 rounded bg-amber-600/20 text-amber-400">
+                        APPROVAL REQUIRED
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
