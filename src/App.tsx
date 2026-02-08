@@ -28,26 +28,26 @@ interface CustomMandates extends FinancialMandates {
 
 const QUICK_SCENARIOS = [
   {
-    id: 'routine_saas',
-    name: 'Routine SaaS',
+    id: 'routine_retail',
+    name: 'Routine Retail',
     amount: 15,
-    merchant: 'AWS Cloud Services',
-    category: 'SaaS / API',
-    description: 'Low-value cloud infrastructure payment'
+    merchant: 'BrightMart Supplies',
+    category: 'Retail Merchant',
+    description: 'Low-value office supplies purchase'
   },
   {
-    id: 'high_value_travel',
-    name: 'High-Value Travel',
+    id: 'high_value_purchase',
+    name: 'High-Value Purchase',
     amount: 1500,
-    merchant: 'Singapore Airlines',
-    category: 'Travel / Logistics',
-    description: 'Business flight booking above threshold'
+    merchant: 'TechFlow Electronics',
+    category: 'Retail Merchant',
+    description: 'Large equipment purchase above threshold'
   },
   {
     id: 'forbidden_crypto',
     name: 'Forbidden Crypto',
     amount: 50,
-    merchant: 'Binance Exchange',
+    merchant: 'CryptoVault Exchange',
     category: 'Ungoverned Gambling',
     description: 'Prohibited category transaction'
   },
@@ -55,8 +55,8 @@ const QUICK_SCENARIOS = [
     id: 'new_vendor',
     name: 'New Vendor',
     amount: 250,
-    merchant: 'Unknown Startup Inc',
-    category: 'SaaS / API',
+    merchant: 'GreenLeaf Organics',
+    category: 'Retail Merchant',
     description: 'First-time merchant purchase'
   }
 ];
@@ -66,9 +66,9 @@ export default function App() {
   const [autoApproveLimit, setAutoApproveLimit] = useState(100);
   const [hitlLimit, setHitlLimit] = useState(1000);
   const [trustedMerchants, setTrustedMerchants] = useState<string[]>([
-    'AWS Cloud Services',
-    'Google Cloud',
-    'Microsoft Azure'
+    'BrightMart Supplies',
+    'TechFlow Electronics',
+    'UrbanStyle Apparel'
   ]);
   const [merchantInput, setMerchantInput] = useState('');
   const [forbiddenCategories, setForbiddenCategories] = useState<string[]>([
