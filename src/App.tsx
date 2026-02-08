@@ -20,7 +20,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { GovernanceValidator } from './core/validator';
 import { DEFAULT_MAS_MANDATES } from './core/mandates';
-import { FinancialMandates, GovernanceEnvelope, ValidationResult } from './core/types';
+import { FinancialMandates, GovernanceEnvelope, ValidationResult, GovernanceMandate } from './core/types';
 
 interface CustomMandates extends FinancialMandates {
   // Additional custom properties for the playground
@@ -63,8 +63,7 @@ const QUICK_SCENARIOS = [
 
 export default function App() {
   // Mandate Configuration State
-  const [autoApproveLimit, setAutoApproveLimit] = useState(100);
-  const [hitlLimit, setHitlLimit] = useState(1000);
+  const [mandates, setMandates] = useState<FinancialMandates>(DEFAULT_MAS_MANDATES);
   const [trustedMerchants, setTrustedMerchants] = useState<string[]>([
     'BrightMart Supplies',
     'TechFlow Electronics',
@@ -75,7 +74,6 @@ export default function App() {
     'Ungoverned Gambling',
     'Cryptocurrency Exchange'
   ]);
-  const [requireHitlForNewMerchants, setRequireHitlForNewMerchants] = useState(true);
 
   // Tab State
   const [activeTab, setActiveTab] = useState<'config' | 'mandates'>('config');
@@ -92,26 +90,8 @@ export default function App() {
     config: FinancialMandates;
   } | null>(null);
 
-  // Build current mandate configuration
-  const currentMandates: FinancialMandates = {
-    ...DEFAULT_MAS_MANDATES,
-    confirmationThreshold: {
-      ...DEFAULT_MAS_MANDATES.confirmationThreshold,
-      parameter: autoApproveLimit
-    },
-    dailyAggregateLimit: {
-      ...DEFAULT_MAS_MANDATES.dailyAggregateLimit,
-      parameter: hitlLimit
-    },
-    blockedCategories: {
-      ...DEFAULT_MAS_MANDATES.blockedCategories,
-      parameter: forbiddenCategories
-    },
-    newMerchantAuth: {
-      ...DEFAULT_MAS_MANDATES.newMerchantAuth,
-      parameter: requireHitlForNewMerchants
-    }
-  };
+  // Derive current configuration for validation
+  const currentMandates: FinancialMandates = mandates;
 
   const testScenario = (scenario: typeof QUICK_SCENARIOS[0] | null, isCustom = false) => {
     const amount = isCustom ? customAmount : scenario!.amount;
@@ -138,28 +118,36 @@ export default function App() {
     const result = GovernanceValidator.validate(envelope, currentMandates, []);
 
     setLastResult({
-      scenario: { name: isCustom ? 'Custom Scenario' : scenario!.name, ...envelope.transaction },
+      scenario,
       result,
-      config: { ...currentMandates }
+      config: currentMandates
     });
   };
 
+  const updateMandate = (key: keyof FinancialMandates, updates: Partial<GovernanceMandate<any>>) => {
+    setMandates(prev => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        ...updates
+      }
+    }));
+  };
+
   const addTrustedMerchant = () => {
-    if (merchantInput.trim() && !trustedMerchants.includes(merchantInput.trim())) {
-      setTrustedMerchants([...trustedMerchants, merchantInput.trim()]);
+    if (merchantInput && !trustedMerchants.includes(merchantInput)) {
+      setTrustedMerchants([...trustedMerchants, merchantInput]);
       setMerchantInput('');
     }
   };
 
-  const removeTrustedMerchant = (merchant: string) => {
-    setTrustedMerchants(trustedMerchants.filter(m => m !== merchant));
+  const removeTrustedMerchant = (name: string) => {
+    setTrustedMerchants(trustedMerchants.filter(m => m !== name));
   };
 
   const resetToDefaults = () => {
-    setAutoApproveLimit(100);
-    setHitlLimit(1000);
-    setTrustedMerchants(['AWS Cloud Services', 'Google Cloud', 'Microsoft Azure']);
-    setRequireHitlForNewMerchants(true);
+    setMandates(DEFAULT_MAS_MANDATES);
+    setTrustedMerchants(['BrightMart Supplies', 'TechFlow Electronics', 'UrbanStyle Apparel']);
     setLastResult(null);
   };
 
@@ -191,8 +179,8 @@ export default function App() {
             <button
               onClick={() => setActiveTab('config')}
               className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'config'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-transparent text-secondary hover:bg-white/5'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-transparent text-secondary hover:bg-white/5'
                 }`}
             >
               <Settings size={16} className="inline mr-2" />
@@ -201,8 +189,8 @@ export default function App() {
             <button
               onClick={() => setActiveTab('mandates')}
               className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'mandates'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-transparent text-secondary hover:bg-white/5'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-transparent text-secondary hover:bg-white/5'
                 }`}
             >
               <Shield size={16} className="inline mr-2" />
@@ -229,14 +217,14 @@ export default function App() {
                       min="0"
                       max="500"
                       step="25"
-                      value={autoApproveLimit}
-                      onChange={(e) => setAutoApproveLimit(Number(e.target.value))}
+                      value={mandates.confirmationThreshold.parameter}
+                      onChange={(e) => updateMandate('confirmationThreshold', { parameter: Number(e.target.value) })}
                       className="slider"
-                      style={{ '--value': `${(autoApproveLimit / 500) * 100}%` } as any}
+                      style={{ '--value': `${(mandates.confirmationThreshold.parameter / 500) * 100}%` } as any}
                     />
                     <div className="slider-value">
                       <span className="text-muted">$0</span>
-                      <span className="slider-value-current">${autoApproveLimit}</span>
+                      <span className="slider-value-current">${mandates.confirmationThreshold.parameter}</span>
                       <span className="text-muted">$500</span>
                     </div>
                   </div>
@@ -253,14 +241,14 @@ export default function App() {
                       min="100"
                       max="5000"
                       step="100"
-                      value={hitlLimit}
-                      onChange={(e) => setHitlLimit(Number(e.target.value))}
+                      value={mandates.dailyAggregateLimit.parameter}
+                      onChange={(e) => updateMandate('dailyAggregateLimit', { parameter: Number(e.target.value) })}
                       className="slider"
-                      style={{ '--value': `${((hitlLimit - 100) / 4900) * 100}%` } as any}
+                      style={{ '--value': `${((mandates.dailyAggregateLimit.parameter - 100) / 4900) * 100}%` } as any}
                     />
                     <div className="slider-value">
                       <span className="text-muted">$100</span>
-                      <span className="slider-value-current">${hitlLimit}</span>
+                      <span className="slider-value-current">${mandates.dailyAggregateLimit.parameter}</span>
                       <span className="text-muted">$5,000</span>
                     </div>
                   </div>
@@ -353,8 +341,8 @@ export default function App() {
                     <label className="toggle">
                       <input
                         type="checkbox"
-                        checked={requireHitlForNewMerchants}
-                        onChange={(e) => setRequireHitlForNewMerchants(e.target.checked)}
+                        checked={mandates.newMerchantAuth.parameter === true}
+                        onChange={(e) => updateMandate('newMerchantAuth', { parameter: e.target.checked })}
                       />
                       <span className="toggle-slider"></span>
                     </label>
@@ -370,141 +358,83 @@ export default function App() {
                 These mandates define the governance rules that protect against various risks. Each mandate has specific parameters and enforcement levels.
               </p>
 
-              {/* Spending Limit Mandates */}
-              <div className="card">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="p-2 bg-indigo-600/20 rounded-lg">
-                    <DollarSign size={20} className="text-indigo-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-lg text-white">Confirmation Threshold</h3>
-                      <span className="badge badge-warning text-xs">fagf-limit-01</span>
-                    </div>
-                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.confirmationThreshold.description}</p>
-                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
-                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
-                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.confirmationThreshold.riskDisclosure}</p>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-xs text-muted">Current: ${autoApproveLimit}</span>
-                      <span className={`text-xs px-2 py-1 rounded ${DEFAULT_MAS_MANDATES.confirmationThreshold.enforcement === 'approval_required'
-                        ? 'bg-amber-600/20 text-amber-400'
-                        : 'bg-rose-600/20 text-rose-400'
+              {Object.keys(mandates).map((key) => {
+                const mandate = mandates[key as keyof FinancialMandates];
+                return (
+                  <div key={mandate.id} className="card">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className={`p-2 rounded-lg ${mandate.category === 'spending_limit' ? 'bg-indigo-600/20' :
+                          mandate.category === 'authorization' ? 'bg-emerald-600/20' :
+                            mandate.category === 'velocity' ? 'bg-amber-600/20' :
+                              'bg-rose-600/20'
                         }`}>
-                        {DEFAULT_MAS_MANDATES.confirmationThreshold.enforcement.replace('_', ' ').toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                        {mandate.category === 'spending_limit' ? <DollarSign size={20} className="text-indigo-400" /> :
+                          mandate.category === 'authorization' ? <UserCheck size={20} className="text-emerald-400" /> :
+                            mandate.category === 'velocity' ? <Zap size={20} className="text-amber-400" /> :
+                              <Lock size={20} className="text-rose-400" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1 justify-between">
+                          <h3 className="font-bold text-lg text-white">
+                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </h3>
+                          <span className={`badge ${mandate.severity === 'high' ? 'badge-danger' :
+                              mandate.severity === 'medium' ? 'badge-warning' :
+                                'badge-success'
+                            } text-xs`}>{mandate.id}</span>
+                        </div>
 
-              <div className="card">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="p-2 bg-indigo-600/20 rounded-lg">
-                    <DollarSign size={20} className="text-indigo-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-lg text-white">Daily Aggregate Limit</h3>
-                      <span className="badge badge-danger text-xs">fagf-limit-02</span>
-                    </div>
-                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.dailyAggregateLimit.description}</p>
-                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
-                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
-                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.dailyAggregateLimit.riskDisclosure}</p>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-xs text-muted">Current: ${hitlLimit}</span>
-                      <span className="text-xs px-2 py-1 rounded bg-rose-600/20 text-rose-400">
-                        BLOCK
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                        <p className="text-sm text-secondary mb-3">{mandate.description}</p>
 
-              {/* Authorization Mandates */}
-              <div className="card">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="p-2 bg-emerald-600/20 rounded-lg">
-                    <UserCheck size={20} className="text-emerald-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-lg text-white">New Merchant Authorization</h3>
-                      <span className="badge badge-warning text-xs">fagf-auth-01</span>
-                    </div>
-                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.newMerchantAuth.description}</p>
-                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
-                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
-                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.newMerchantAuth.riskDisclosure}</p>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-xs text-muted">Status: {requireHitlForNewMerchants ? 'Enabled' : 'Disabled'}</span>
-                      <span className="text-xs px-2 py-1 rounded bg-amber-600/20 text-amber-400">
-                        APPROVAL REQUIRED
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                        <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20 mb-3">
+                          <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
+                          <p className="text-sm text-secondary">{mandate.riskDisclosure}</p>
+                        </div>
 
-              {/* Category Restrictions */}
-              <div className="card">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="p-2 bg-rose-600/20 rounded-lg">
-                    <Lock size={20} className="text-rose-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-lg text-white">Category Restrictions</h3>
-                      <span className="badge badge-danger text-xs">fagf-cat-01</span>
-                    </div>
-                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.blockedCategories.description}</p>
-                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
-                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
-                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.blockedCategories.riskDisclosure}</p>
-                    </div>
-                    <div className="mt-3">
-                      <p className="text-xs text-muted mb-2">Blocked Categories:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {forbiddenCategories.map(cat => (
-                          <span key={cat} className="text-xs px-2 py-1 rounded bg-rose-600/20 text-rose-400 border border-rose-500/30">
-                            {cat}
-                          </span>
-                        ))}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs text-muted block mb-1 uppercase font-bold">Enforcement</label>
+                            <select
+                              value={mandate.enforcement}
+                              onChange={(e) => updateMandate(key as keyof FinancialMandates, { enforcement: e.target.value as any })}
+                              className="select-field text-xs py-1 h-8"
+                            >
+                              <option value="none">IGNORE (BYPASS)</option>
+                              <option value="soft_warning">SOFT WARNING</option>
+                              <option value="approval_required">APPROVAL REQUIRED</option>
+                              <option value="block">BLOCK (REJECT)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted block mb-1 uppercase font-bold">Parameter</label>
+                            {typeof mandate.parameter === 'number' ? (
+                              <input
+                                type="number"
+                                value={mandate.parameter}
+                                onChange={(e) => updateMandate(key as keyof FinancialMandates, { parameter: Number(e.target.value) })}
+                                className="input-field text-xs py-1 h-8"
+                              />
+                            ) : typeof mandate.parameter === 'boolean' ? (
+                              <select
+                                value={mandate.parameter ? 'true' : 'false'}
+                                onChange={(e) => updateMandate(key as keyof FinancialMandates, { parameter: e.target.value === 'true' })}
+                                className="select-field text-xs py-1 h-8"
+                              >
+                                <option value="true">ENABLED</option>
+                                <option value="false">DISABLED</option>
+                              </select>
+                            ) : (
+                              <div className="text-xs bg-white/5 rounded px-2 py-1 border border-white/10 text-muted h-8 flex items-center italic">
+                                Array/Complex
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Velocity Controls */}
-              <div className="card">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="p-2 bg-amber-600/20 rounded-lg">
-                    <Zap size={20} className="text-amber-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-lg text-white">Rate Limiting</h3>
-                      <span className="badge badge-warning text-xs">fagf-velocity-01</span>
-                    </div>
-                    <p className="text-sm text-secondary mb-3">{DEFAULT_MAS_MANDATES.rateLimitPerHour.description}</p>
-                    <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20">
-                      <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
-                      <p className="text-sm text-secondary">{DEFAULT_MAS_MANDATES.rateLimitPerHour.riskDisclosure}</p>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-xs text-muted">Limit: {DEFAULT_MAS_MANDATES.rateLimitPerHour.parameter} tx/hour</span>
-                      <span className="text-xs px-2 py-1 rounded bg-amber-600/20 text-amber-400">
-                        APPROVAL REQUIRED
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
           )}
         </div>
