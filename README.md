@@ -1,24 +1,29 @@
-# FAGF-FS Core: Sample Application
+# FAGF-FS: Foundational Agentic Governance Framework for Financial Services
 
-This project is a standalone reference implementation of the **Foundational Agentic Governance Framework for Financial Services (FAGF-FS)**.
+This repository is the home of the **Foundational Agentic Governance Framework for Financial Services (FAGF-FS)**—a standardized specification for the safe deployment of autonomous AI agents in financial ecosystems.
 
-## Core Features
-- **Deterministic Validator**: A strictly synchronous engine that evaluates AI-proposals against financial mandates.
-- **MAS-Aligned Mandates**: Default policy set aligned with Singapore's financial security standards (E-Payments User Protection, TRM).
-- **Agent Simulation Console**: Interactive UI to simulate routine, high-value, and high-risk agent transactions.
-- **Audit Trace**: Full historical logging of every governance outcome (Allow, Block, HITL).
+## 📖 The Specification
+The core of this repository is the [FAGF-FS Specification](./SPECIFICATION.md). 
 
-## Project Structure
-- `src/core/`: The foundational governance logic.
-    - `types.ts`: FAGF-FS standardized data models.
-    - `validator.ts`: The deterministic validation engine.
-    - `mandates.ts`: Reference financial mandates.
-- `src/App.tsx`: The sample dashboard and simulation environment.
+FAGF-FS provides:
+- **Architectural Blueprints**: Tiered Validation Logic (TVL) and Sync/Async integration patterns.
+- **Mandate Taxonomy**: Standardized categories for Authorization, Spending, Velocity, and Reasoning.
+- **AI-Specific Safety**: Protocols for Reasoning Consistency and Hallucination Filtering.
+- **Regulatory Alignment**: Templates for mapping to MAS, ISO 20022, and other foundational standards.
 
-## Running the App
-1. `cd claudezone/fagf-fs-core`
-2. `npm install --legacy-peer-deps`
-3. `npm run dev`
+## 🚀 Supporting Reference Implementation
+To demonstrate the practical utility of the framework, this repository includes a **Sample Application**—a high-fidelity demo of the FAGF-FS "Validator" in action.
+
+### Features
+- **Deterministic Validator**: A reference TypeScript implementation of the FAGF-FS core engine.
+- **Interactive Dashboard**: A premium UI to simulate agent transactions and experience the Human-in-the-Loop (HITL) flow.
+- **Live Audit Trace**: Full observability into how mandates are evaluated and enforced.
+
+## 🛠 Getting Started (Sample App)
+To explore the reference implementation locally:
+
+1. `npm install --legacy-peer-deps`
+2. `npm run dev`
 
 ---
-*Powered by Foundational Agentic Governance Framework for Financial Services (FAGF-FS)*
+*Maintained by the Agentic Financial Standards Org (Conceptual)*
