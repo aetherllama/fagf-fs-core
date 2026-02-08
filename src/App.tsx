@@ -359,7 +359,7 @@ export default function App() {
                   className="card card-hover text-left"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h4 className="font-bold">{scenario.name}</h4>
+                    <h4 className="font-bold text-white">{scenario.name}</h4>
                     <span className="text-lg font-black text-indigo-400">${scenario.amount}</span>
                   </div>
                   <p className="text-xs text-secondary mb-2">{scenario.merchant}</p>
