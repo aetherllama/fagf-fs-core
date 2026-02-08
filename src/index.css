@@ -9,13 +9,16 @@
   --warning: #f59e0b;
   --danger: #ef4444;
   --bg: #020617;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  /* Increased contrast from slate-500 */
 }
 
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, system-ui, sans-serif;
   background-color: var(--bg);
-  color: #f1f5f9;
+  color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   background-image:
     radial-gradient(at 0% 0%, hsla(217, 100%, 50%, 0.15) 0px, transparent 50%),
@@ -28,16 +31,93 @@ body {
 }
 
 .glass {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
 }
 
 .glass-light {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Tab Active Indicator */
+.tab-active {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+}
+
+/* Prose-like styles for SPECIFICATION.md rendering */
+.prose h1,
+.prose h2,
+.prose h3 {
+  color: #fff;
+  font-weight: 800;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+}
+
+.prose h3 {
+  font-size: 1.2rem;
+  color: #60a5fa;
+}
+
+.prose p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  font-size: 1rem;
+}
+
+.prose ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+  color: #cbd5e1;
+}
+
+.prose code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+  color: #f472b6;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+
+.prose th {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75rem;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.prose td {
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
 }
 
 .card-hover {
@@ -56,7 +136,7 @@ body {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -64,10 +144,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
 }
