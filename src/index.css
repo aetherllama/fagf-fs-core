@@ -31,6 +31,36 @@ body {
   overflow: hidden;
 }
 
+/* Force all text to be light colored */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+button,
+input,
+select,
+textarea,
+label {
+  color: var(--text-primary);
+}
+
+/* Specific element overrides */
+.card h4,
+.card h3,
+.card h2,
+.card h1 {
+  color: #ffffff !important;
+}
+
+button {
+  color: inherit;
+}
+
 /* Playground Layout */
 .playground-layout {
   display: grid;
