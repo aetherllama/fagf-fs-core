@@ -2,7 +2,32 @@
 
 **Version: 1.0.0-Stable**
 
+## About
+
+**FAGF-FS** is a comprehensive specification and reference implementation for governing autonomous AI agents in financial services. As artificial intelligence transitions from advisory roles to autonomous transaction execution, this framework provides the architectural blueprints, safety protocols, and regulatory alignment needed to deploy AI agents responsibly in production financial systems.
+
+### Background
+
+The rapid advancement of AI agents capable of autonomous decision-making has created a critical gap: **how do we ensure these agents operate safely within financial regulations while maintaining the speed and efficiency that makes them valuable?** Traditional post-execution auditing is insufficient when agents can execute transactions in milliseconds. FAGF-FS addresses this by introducing **pre-execution governance** through deterministic validation.
+
+### Who Is This For?
+
+- **Financial Institutions**: Banks, fintechs, and payment processors deploying AI agents for autonomous operations
+- **Regulatory Bodies**: Organizations seeking standardized frameworks for AI governance in finance
+- **AI Developers**: Teams building autonomous agents that handle financial transactions
+- **Compliance Officers**: Professionals responsible for ensuring AI systems meet regulatory requirements
+- **Researchers**: Academics studying safe AI deployment in high-stakes domains
+
+### What Makes FAGF-FS Different?
+
+Unlike general AI safety frameworks, FAGF-FS is purpose-built for financial services with:
+- **Regulatory Mapping**: Direct alignment with MAS, GDPR, ISO 20022, and other financial standards
+- **Deterministic Validation**: Same input always produces same output - critical for auditing
+- **Financial-First Design**: Built-in concepts like spending limits, velocity controls, and HITL thresholds
+- **Production-Ready**: Reference implementation with real-world mandate examples
+
 ## What is FAGF-FS?
+
 
 The **Foundational Agentic Governance Framework for Financial Services (FAGF-FS)** is a standardized specification for building safe, compliant, and auditable autonomous AI agents in financial ecosystems. As AI agents evolve from advisory tools to autonomous executors of financial transactions, FAGF-FS provides the architectural blueprints and operational mandates necessary to ensure every action is governed by human-defined policy and regulatory requirements.
 
