@@ -11,6 +11,14 @@ As AI agents transition from advisory roles to transactional execution, FAGF-FS 
 - **Regulatory Parity**: Map existing financial laws (e.g., MAS, GDPR, Dodd-Frank) into executable code.
 - **Operational Transparency**: Ensure every autonomous decision has a verifiable audit trail and logic trace.
 
+### 1.2 Mandates vs. Guardrails
+This framework distinguishes between deterministic and probabilistic safety measures:
+
+- **Mandates**: Atomic, deterministic rules (non-probabilistic). They are the "Financial Laws" enforced by the Validator (e.g., spending limits).
+- **Guardrails**: Probabilistic or behavioral safety measures (e.g., content filtering, tone of voice) usually enforced at the LLM gateway.
+
+**FAGF-FS focuses primarily on the Mandate layer to ensure absolute regulatory compliance.**
+
 ---
 
 ## 2. Theoretical Architecture
