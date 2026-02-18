@@ -74,10 +74,6 @@ export default function App() {
     'UrbanStyle Apparel'
   ]);
   const [merchantInput, setMerchantInput] = useState('');
-  const [forbiddenCategories, setForbiddenCategories] = useState<string[]>([
-    'Ungoverned Gambling',
-    'Cryptocurrency Exchange'
-  ]);
 
   // No active tab needed for unified view
 
@@ -125,7 +121,7 @@ export default function App() {
       context: {
         isNewMerchant: !trustedMerchants.includes(merchant),
         historyDepth: trustedMerchants.includes(merchant) ? 50 : 0,
-        riskScore: forbiddenCategories.includes(category) ? 5 : amount > 1000 ? 2 : 1
+        riskScore: activeMandates.blockedCategories.parameter.includes(category) ? 5 : amount > 1000 ? 2 : 1
       }
     };
 
@@ -365,14 +361,14 @@ export default function App() {
               </label>
 
               {/* Blocked Categories */}
-              <div className="card mb-4">
+              <div className="card mb-4 border-l-2 border-rose-500/50">
                 <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
-                  <label className="text-sm font-bold text-white uppercase tracking-tight">Blocked Categories</label>
-                  <span className="badge badge-danger text-[10px] py-0 px-2 font-mono">{pendingMandates.blockedCategories.id}</span>
+                  <label className="text-[12px] font-black text-white uppercase tracking-tight">Forbidden Categories</label>
+                  <span className="badge badge-danger text-[9px] py-0 px-1 font-mono">{pendingMandates.blockedCategories.id}</span>
                 </div>
                 <div className="tag-list mb-3">
                   {(pendingMandates.blockedCategories.parameter as string[]).map(cat => (
-                    <div key={cat} className="tag bg-rose-500/10 border-rose-500/20 text-rose-400 text-[10px] font-bold">
+                    <div key={cat} className="tag bg-rose-500/10 border-rose-500/20 text-rose-400 text-[9px] font-bold uppercase tracking-tighter">
                       <Lock size={10} />
                       <span>{cat}</span>
                       <X size={10} className="tag-remove" onClick={() => {
@@ -396,87 +392,88 @@ export default function App() {
                       }
                     }
                   }}
-                  placeholder="Add restricted category..."
-                  className="input-field text-[11px] py-1 h-8"
+                  placeholder="Type & Enter to add block..."
+                  className="input-field text-[10px] py-1 h-8 bg-black/20"
                 />
+                <p className="control-description text-[10px] mt-3 opacity-60 font-medium italic">All transactions matching these labels will be hard-blocked.</p>
+              </div>
+            </div>
+
+            {/* Velocity Controls */}
+            <div className="space-y-4">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted block">Velocity & Metadata</label>
+
+              {/* Rate Limit */}
+              <div className="card">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-white uppercase">{pendingMandates.rateLimitPerHour.id}</label>
+                  <span className="text-indigo-400 font-black text-xs">{pendingMandates.rateLimitPerHour.parameter} ops/hr</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={pendingMandates.rateLimitPerHour.parameter}
+                  onChange={(e) => updateMandate('rateLimitPerHour', { parameter: Number(e.target.value) })}
+                  className="slider slider-sm"
+                  style={{ '--value': `${(pendingMandates.rateLimitPerHour.parameter / 100) * 100}%` } as any}
+                />
+                <p className="text-[10px] text-muted mt-2">{pendingMandates.rateLimitPerHour.description}</p>
               </div>
 
-              {/* Velocity Controls */}
-              <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-muted block">Velocity & Metadata</label>
-
-                {/* Rate Limit */}
-                <div className="card">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-bold text-white uppercase">{pendingMandates.rateLimitPerHour.id}</label>
-                    <span className="text-indigo-400 font-black text-xs">{pendingMandates.rateLimitPerHour.parameter} ops/hr</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={pendingMandates.rateLimitPerHour.parameter}
-                    onChange={(e) => updateMandate('rateLimitPerHour', { parameter: Number(e.target.value) })}
-                    className="slider slider-sm"
-                    style={{ '--value': `${(pendingMandates.rateLimitPerHour.parameter / 100) * 100}%` } as any}
-                  />
-                  <p className="text-[10px] text-muted mt-2">{pendingMandates.rateLimitPerHour.description}</p>
+              {/* Cooldown */}
+              <div className="card">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-white uppercase">{pendingMandates.cooldownSeconds.id}</label>
+                  <span className="text-indigo-400 font-black text-xs">{pendingMandates.cooldownSeconds.parameter}s</span>
                 </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="300"
+                  step="5"
+                  value={pendingMandates.cooldownSeconds.parameter}
+                  onChange={(e) => updateMandate('cooldownSeconds', { parameter: Number(e.target.value) })}
+                  className="slider slider-sm"
+                  style={{ '--value': `${(pendingMandates.cooldownSeconds.parameter / 300) * 100}%` } as any}
+                />
+                <p className="text-[10px] text-muted mt-2">{pendingMandates.cooldownSeconds.description}</p>
+              </div>
 
-                {/* Cooldown */}
-                <div className="card">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-bold text-white uppercase">{pendingMandates.cooldownSeconds.id}</label>
-                    <span className="text-indigo-400 font-black text-xs">{pendingMandates.cooldownSeconds.parameter}s</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="300"
-                    step="5"
-                    value={pendingMandates.cooldownSeconds.parameter}
-                    onChange={(e) => updateMandate('cooldownSeconds', { parameter: Number(e.target.value) })}
-                    className="slider slider-sm"
-                    style={{ '--value': `${(pendingMandates.cooldownSeconds.parameter / 300) * 100}%` } as any}
-                  />
-                  <p className="text-[10px] text-muted mt-2">{pendingMandates.cooldownSeconds.description}</p>
+              {/* Allowed Methods */}
+              <div className="card">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-white uppercase">Payment Methods</label>
+                  <span className="badge badge-success text-[10px] py-0">{pendingMandates.allowedMethods.id}</span>
                 </div>
-
-                {/* Allowed Methods */}
-                <div className="card">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-bold text-white uppercase">Payment Methods</label>
-                    <span className="badge badge-success text-[10px] py-0">{pendingMandates.allowedMethods.id}</span>
-                  </div>
-                  <div className="tag-list mb-2">
-                    {(pendingMandates.allowedMethods.parameter as string[]).map(method => (
-                      <div key={method} className="tag text-[9px] bg-indigo-500/10 border-indigo-500/20 text-indigo-400 uppercase font-black">
-                        <span>{method}</span>
-                        <X size={10} className="tag-remove" onClick={() => {
-                          const current = pendingMandates.allowedMethods.parameter as string[];
-                          updateMandate('allowedMethods', { parameter: current.filter(m => m !== method) });
-                        }} />
-                      </div>
-                    ))}
-                  </div>
-                  <input
-                    type="text"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        const val = (e.target as HTMLInputElement).value;
-                        if (val) {
-                          const current = pendingMandates.allowedMethods.parameter as string[];
-                          if (!current.includes(val)) {
-                            updateMandate('allowedMethods', { parameter: [...current, val] });
-                            (e.target as HTMLInputElement).value = '';
-                          }
+                <div className="tag-list mb-2">
+                  {(pendingMandates.allowedMethods.parameter as string[]).map(method => (
+                    <div key={method} className="tag text-[9px] bg-indigo-500/10 border-indigo-500/20 text-indigo-400 uppercase font-black">
+                      <span>{method}</span>
+                      <X size={10} className="tag-remove" onClick={() => {
+                        const current = pendingMandates.allowedMethods.parameter as string[];
+                        updateMandate('allowedMethods', { parameter: current.filter(m => m !== method) });
+                      }} />
+                    </div>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const val = (e.target as HTMLInputElement).value;
+                      if (val) {
+                        const current = pendingMandates.allowedMethods.parameter as string[];
+                        if (!current.includes(val)) {
+                          updateMandate('allowedMethods', { parameter: [...current, val] });
+                          (e.target as HTMLInputElement).value = '';
                         }
                       }
-                    }}
-                    placeholder="Add allowed method..."
-                    className="input-field text-[11px] py-1 h-8"
-                  />
-                </div>
+                    }
+                  }}
+                  placeholder="Add allowed method..."
+                  className="input-field text-[11px] py-1 h-8"
+                />
               </div>
             </div>
           </div>
@@ -484,7 +481,7 @@ export default function App() {
       </div>
 
       {/* RIGHT PANEL: Testing */}
-      <div className="panel">
+      <div className="panel flex-1 h-screen overflow-hidden flex flex-col">
         <div className="panel-header">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -627,15 +624,15 @@ export default function App() {
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-muted mb-1">Amount</p>
-                        <p className="font-bold text-lg">${lastResult.scenario.amount}</p>
+                        <p className="font-bold text-lg">${lastResult.scenario?.amount || customAmount}</p>
                       </div>
                       <div>
                         <p className="text-muted mb-1">Merchant</p>
-                        <p className="font-semibold">{lastResult.scenario.merchantName}</p>
+                        <p className="font-semibold">{lastResult.scenario?.merchant || customMerchant}</p>
                       </div>
                       <div>
                         <p className="text-muted mb-1">Category</p>
-                        <p className="font-semibold">{lastResult.scenario.category}</p>
+                        <p className="font-semibold">{lastResult.scenario?.category || customCategory}</p>
                       </div>
                     </div>
                   </div>

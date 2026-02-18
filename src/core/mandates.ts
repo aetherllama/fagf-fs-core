@@ -52,7 +52,7 @@ export const DEFAULT_MAS_MANDATES: FinancialMandates = {
     blockedCategories: {
         id: 'fagf-cat-01',
         category: 'category_restriction',
-        parameter: ['Gambling', 'Unregulated Crypto', 'Offshore Investment', 'Job Scams'],
+        parameter: ['Ungoverned Gambling', 'Unregulated Crypto', 'Offshore Investment', 'Job Scams'],
         enforcement: 'block',
         severity: 'high',
         riskDisclosure: 'Regulatory Compliance & High-Risk Mitigation',
