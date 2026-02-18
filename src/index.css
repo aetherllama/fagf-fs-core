@@ -40,12 +40,7 @@ h5,
 h6,
 p,
 span,
-div,
-button,
-input,
-select,
-textarea,
-label {
+div {
   color: var(--text-primary);
 }
 

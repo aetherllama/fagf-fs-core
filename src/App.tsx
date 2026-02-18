@@ -63,7 +63,11 @@ const QUICK_SCENARIOS = [
 
 export default function App() {
   // Mandate Configuration State
-  const [mandates, setMandates] = useState<FinancialMandates>(DEFAULT_MAS_MANDATES);
+  // Mandate Configuration State (Active vs Pending for "Deploy" workflow)
+  const [activeMandates, setActiveMandates] = useState<FinancialMandates>(DEFAULT_MAS_MANDATES);
+  const [pendingMandates, setPendingMandates] = useState<FinancialMandates>(DEFAULT_MAS_MANDATES);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [showDeploySuccess, setShowDeploySuccess] = useState(false);
   const [trustedMerchants, setTrustedMerchants] = useState<string[]>([
     'BrightMart Supplies',
     'TechFlow Electronics',
@@ -75,8 +79,7 @@ export default function App() {
     'Cryptocurrency Exchange'
   ]);
 
-  // Tab State
-  const [activeTab, setActiveTab] = useState<'config' | 'mandates'>('config');
+  // No active tab needed for unified view
 
   // Scenario State
   const [customAmount, setCustomAmount] = useState(100);
@@ -90,8 +93,19 @@ export default function App() {
     config: FinancialMandates;
   } | null>(null);
 
-  // Derive current configuration for validation
-  const currentMandates: FinancialMandates = mandates;
+  // Check if there are undeployed changes
+  const hasPendingChanges = JSON.stringify(activeMandates) !== JSON.stringify(pendingMandates);
+
+  const deployChanges = () => {
+    setIsDeploying(true);
+    // Simulate a secure deployment process
+    setTimeout(() => {
+      setActiveMandates(pendingMandates);
+      setIsDeploying(false);
+      setShowDeploySuccess(true);
+      setTimeout(() => setShowDeploySuccess(false), 3000);
+    }, 800);
+  };
 
   const testScenario = (scenario: typeof QUICK_SCENARIOS[0] | null, isCustom = false) => {
     const amount = isCustom ? customAmount : scenario!.amount;
@@ -115,17 +129,17 @@ export default function App() {
       }
     };
 
-    const result = GovernanceValidator.validate(envelope, currentMandates, []);
+    const result = GovernanceValidator.validate(envelope, activeMandates, []);
 
     setLastResult({
       scenario,
       result,
-      config: currentMandates
+      config: activeMandates
     });
   };
 
   const updateMandate = (key: keyof FinancialMandates, updates: Partial<GovernanceMandate<any>>) => {
-    setMandates(prev => ({
+    setPendingMandates(prev => ({
       ...prev,
       [key]: {
         ...prev[key],
@@ -146,7 +160,8 @@ export default function App() {
   };
 
   const resetToDefaults = () => {
-    setMandates(DEFAULT_MAS_MANDATES);
+    setPendingMandates(DEFAULT_MAS_MANDATES);
+    setActiveMandates(DEFAULT_MAS_MANDATES);
     setTrustedMerchants(['BrightMart Supplies', 'TechFlow Electronics', 'UrbanStyle Apparel']);
     setLastResult(null);
   };
@@ -163,293 +178,336 @@ export default function App() {
               </div>
               <div>
                 <h1 className="text-xl font-black text-white">Governance Control</h1>
-                <p className="text-sm text-muted">Configure and explore mandates</p>
+                <p className="text-sm text-muted">Unified active policy management</p>
               </div>
             </div>
-            {activeTab === 'config' && (
-              <button onClick={resetToDefaults} className="btn btn-secondary btn-sm">
-                <RotateCcw size={16} />
-                Reset
-              </button>
-            )}
+            <button onClick={resetToDefaults} className="btn btn-secondary btn-sm">
+              <RotateCcw size={16} />
+              Reset
+            </button>
           </div>
 
-          {/* Tab Navigation */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('config')}
-              className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'config'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-transparent text-secondary hover:bg-white/5'
-                }`}
-            >
-              <Settings size={16} className="inline mr-2" />
-              Configuration
-            </button>
-            <button
-              onClick={() => setActiveTab('mandates')}
-              className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'mandates'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-transparent text-secondary hover:bg-white/5'
-                }`}
-            >
-              <Shield size={16} className="inline mr-2" />
-              Mandates
-            </button>
+          {/* Deployment Panel - Unified Header Action */}
+          <div className="flex flex-col gap-2">
+            <AnimatePresence>
+              {hasPendingChanges && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden mb-2"
+                >
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 text-amber-500 text-[10px] font-black tracking-widest uppercase">
+                        <AlertTriangle size={14} />
+                        Undeployed Policy
+                      </div>
+                    </div>
+                    <button
+                      onClick={deployChanges}
+                      disabled={isDeploying}
+                      className={`w-full py-3 rounded-lg font-black text-sm flex items-center justify-center gap-2 transition-all ${isDeploying
+                        ? 'bg-amber-500/20 text-amber-500/50 cursor-not-allowed'
+                        : 'bg-[#f59e0b] text-[#0a0e1a] hover:bg-[#d97706] shadow-lg shadow-amber-500/20'
+                        }`}
+                    >
+                      {isDeploying ? (
+                        <>
+                          <RotateCcw size={16} className="animate-spin" />
+                          Deploying...
+                        </>
+                      ) : (
+                        <>
+                          <Zap size={16} />
+                          Deploy Changes
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {showDeploySuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="mb-2 p-2 bg-emerald-500/20 border border-emerald-500/30 rounded-lg flex items-center gap-2 text-emerald-400 text-xs font-bold"
+                >
+                  <CheckCircle size={14} />
+                  Governance Policy Deployed!
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        <div className="panel-content">
-          {activeTab === 'config' && (
-            <>
-              {/* Value Limits */}
-              <div className="control-group">
-                <label className="control-label flex items-center gap-2">
-                  <DollarSign size={16} className="text-indigo-400" />
-                  Value Limits
-                </label>
+        <div className="panel-content scrollbar-thin">
+          <div className="space-y-8 pb-12">
 
-                <div className="card mb-4">
-                  <label className="text-sm font-semibold mb-2 block text-white">Auto-Approve Threshold</label>
-                  <div className="slider-container">
-                    <input
-                      type="range"
-                      min="0"
-                      max="500"
-                      step="25"
-                      value={mandates.confirmationThreshold.parameter}
-                      onChange={(e) => updateMandate('confirmationThreshold', { parameter: Number(e.target.value) })}
-                      className="slider"
-                      style={{ '--value': `${(mandates.confirmationThreshold.parameter / 500) * 100}%` } as any}
-                    />
-                    <div className="slider-value">
-                      <span className="text-muted">$0</span>
-                      <span className="slider-value-current">${mandates.confirmationThreshold.parameter}</span>
-                      <span className="text-muted">$500</span>
-                    </div>
-                  </div>
-                  <p className="control-description">
-                    Transactions below this amount are approved automatically (if other rules pass).
-                  </p>
-                </div>
+            {/* Category: Financial Limits */}
+            <div className="control-group">
+              <label className="control-label flex items-center gap-2 text-indigo-400 mb-4">
+                <DollarSign size={18} />
+                Financial Limits
+              </label>
 
-                <div className="card">
-                  <label className="text-sm font-semibold mb-2 block text-white">HITL Threshold</label>
-                  <div className="slider-container">
-                    <input
-                      type="range"
-                      min="100"
-                      max="5000"
-                      step="100"
-                      value={mandates.dailyAggregateLimit.parameter}
-                      onChange={(e) => updateMandate('dailyAggregateLimit', { parameter: Number(e.target.value) })}
-                      className="slider"
-                      style={{ '--value': `${((mandates.dailyAggregateLimit.parameter - 100) / 4900) * 100}%` } as any}
-                    />
-                    <div className="slider-value">
-                      <span className="text-muted">$100</span>
-                      <span className="slider-value-current">${mandates.dailyAggregateLimit.parameter}</span>
-                      <span className="text-muted">$5,000</span>
-                    </div>
-                  </div>
-                  <p className="control-description">
-                    Transactions above this amount require human approval.
-                  </p>
+              <div className="card mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-bold text-white">Auto-Approve Threshold</label>
+                  <span className="badge badge-success text-[10px] py-0">{pendingMandates.confirmationThreshold.id}</span>
                 </div>
+                <div className="slider-container">
+                  <input
+                    type="range"
+                    min="0"
+                    max="500"
+                    step="25"
+                    value={pendingMandates.confirmationThreshold.parameter}
+                    onChange={(e) => updateMandate('confirmationThreshold', { parameter: Number(e.target.value) })}
+                    className="slider"
+                    style={{ '--value': `${(pendingMandates.confirmationThreshold.parameter / 500) * 100}%` } as any}
+                  />
+                  <div className="slider-value">
+                    <span className="text-muted text-[10px]">$0</span>
+                    <span className="slider-value-current text-indigo-400">${pendingMandates.confirmationThreshold.parameter}</span>
+                    <span className="text-muted text-[10px]">$500</span>
+                  </div>
+                </div>
+                <p className="control-description text-[11px] mt-2 opacity-70">{pendingMandates.confirmationThreshold.description}</p>
               </div>
 
-              {/* Merchant Allowlist */}
-              <div className="control-group">
-                <label className="control-label flex items-center gap-2">
-                  <Store size={16} className="text-emerald-400" />
-                  Trusted Merchants
-                </label>
-
-                <div className="card">
-                  <div className="flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      value={merchantInput}
-                      onChange={(e) => setMerchantInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addTrustedMerchant()}
-                      placeholder="Add merchant name..."
-                      className="input-field"
-                    />
-                    <button onClick={addTrustedMerchant} className="btn btn-primary">
-                      <Plus size={16} />
-                    </button>
-                  </div>
-
-                  <div className="tag-list">
-                    {trustedMerchants.length > 0 ? (
-                      trustedMerchants.map(merchant => (
-                        <div key={merchant} className="tag">
-                          <span>{merchant}</span>
-                          <X
-                            size={14}
-                            className="tag-remove"
-                            onClick={() => removeTrustedMerchant(merchant)}
-                          />
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-muted text-sm italic">No trusted merchants added</p>
-                    )}
-                  </div>
-
-                  <p className="control-description mt-3">
-                    Merchants on this list bypass certain restrictions for routine transactions.
-                  </p>
+              <div className="card">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-bold text-white">Hard Block Threshold</label>
+                  <span className="badge badge-danger text-[10px] py-0">{pendingMandates.dailyAggregateLimit.id}</span>
                 </div>
+                <div className="slider-container">
+                  <input
+                    type="range"
+                    min="100"
+                    max="5000"
+                    step="100"
+                    value={pendingMandates.dailyAggregateLimit.parameter}
+                    onChange={(e) => updateMandate('dailyAggregateLimit', { parameter: Number(e.target.value) })}
+                    className="slider slider-danger"
+                    style={{ '--value': `${((pendingMandates.dailyAggregateLimit.parameter - 100) / 4900) * 100}%` } as any}
+                  />
+                  <div className="slider-value">
+                    <span className="text-muted text-[10px]">$100</span>
+                    <span className="slider-value-current text-rose-400">${pendingMandates.dailyAggregateLimit.parameter}</span>
+                    <span className="text-muted text-[10px]">$5,000</span>
+                  </div>
+                </div>
+                <p className="control-description text-[11px] mt-2 opacity-70">{pendingMandates.dailyAggregateLimit.description}</p>
+              </div>
+            </div>
+
+            {/* Category: Authorization & Trust */}
+            <div className="control-group">
+              <label className="control-label flex items-center gap-2 text-emerald-400 mb-4">
+                <Store size={18} />
+                Authorization & Trust
+              </label>
+
+              <div className="card mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-bold text-white">New Merchant Review</label>
+                    <span className="badge badge-warning text-[10px] py-0">{pendingMandates.newMerchantAuth.id}</span>
+                  </div>
+                  <label className="toggle">
+                    <input
+                      type="checkbox"
+                      checked={pendingMandates.newMerchantAuth.parameter === true}
+                      onChange={(e) => updateMandate('newMerchantAuth', { parameter: e.target.checked })}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+                <p className="control-description text-[11px] mt-2 opacity-70">{pendingMandates.newMerchantAuth.description}</p>
               </div>
 
-              {/* Category Restrictions */}
-              <div className="control-group">
-                <label className="control-label flex items-center gap-2">
-                  <Tag size={16} className="text-rose-400" />
-                  Forbidden Categories
-                </label>
+              <div className="card">
+                <label className="text-xs font-black uppercase tracking-widest text-muted mb-3 block">Trusted Merchants (Bypass)</label>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={merchantInput}
+                    onChange={(e) => setMerchantInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addTrustedMerchant()}
+                    placeholder="Search/Add trusted vendor..."
+                    className="input-field text-xs py-1"
+                  />
+                  <button onClick={addTrustedMerchant} className="btn btn-primary btn-sm px-2">
+                    <Plus size={14} />
+                  </button>
+                </div>
+                <div className="tag-list">
+                  {trustedMerchants.map(merchant => (
+                    <div key={merchant} className="tag text-[10px]">
+                      <span>{merchant}</span>
+                      <X size={10} className="tag-remove" onClick={() => removeTrustedMerchant(merchant)} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
+            {/* Category: Safety & Compliance */}
+            <div className="control-group">
+              <label className="control-label flex items-center gap-2 text-rose-400 mb-4">
+                <Shield size={18} />
+                Safety & Compliance
+              </label>
+
+              {/* Blocked Categories */}
+              <div className="card mb-4">
+                <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+                  <label className="text-sm font-bold text-white uppercase tracking-tight">Blocked Categories</label>
+                  <span className="badge badge-danger text-[10px] py-0 px-2 font-mono">{pendingMandates.blockedCategories.id}</span>
+                </div>
+                <div className="tag-list mb-3">
+                  {(pendingMandates.blockedCategories.parameter as string[]).map(cat => (
+                    <div key={cat} className="tag bg-rose-500/10 border-rose-500/20 text-rose-400 text-[10px] font-bold">
+                      <Lock size={10} />
+                      <span>{cat}</span>
+                      <X size={10} className="tag-remove" onClick={() => {
+                        const current = pendingMandates.blockedCategories.parameter as string[];
+                        updateMandate('blockedCategories', { parameter: current.filter(c => c !== cat) });
+                      }} />
+                    </div>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const val = (e.target as HTMLInputElement).value;
+                      if (val) {
+                        const current = pendingMandates.blockedCategories.parameter as string[];
+                        if (!current.includes(val)) {
+                          updateMandate('blockedCategories', { parameter: [...current, val] });
+                          (e.target as HTMLInputElement).value = '';
+                        }
+                      }
+                    }
+                  }}
+                  placeholder="Add restricted category..."
+                  className="input-field text-[11px] py-1 h-8"
+                />
+              </div>
+
+              {/* Velocity Controls */}
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted block">Velocity & Metadata</label>
+
+                {/* Rate Limit */}
                 <div className="card">
-                  <div className="tag-list">
-                    {forbiddenCategories.map(cat => (
-                      <div key={cat} className="tag" style={{ borderColor: '#ef4444', background: 'rgba(239, 68, 68, 0.1)' }}>
-                        <Lock size={14} />
-                        <span>{cat}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-white uppercase">{pendingMandates.rateLimitPerHour.id}</label>
+                    <span className="text-indigo-400 font-black text-xs">{pendingMandates.rateLimitPerHour.parameter} ops/hr</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="100"
+                    value={pendingMandates.rateLimitPerHour.parameter}
+                    onChange={(e) => updateMandate('rateLimitPerHour', { parameter: Number(e.target.value) })}
+                    className="slider slider-sm"
+                    style={{ '--value': `${(pendingMandates.rateLimitPerHour.parameter / 100) * 100}%` } as any}
+                  />
+                  <p className="text-[10px] text-muted mt-2">{pendingMandates.rateLimitPerHour.description}</p>
+                </div>
+
+                {/* Cooldown */}
+                <div className="card">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-white uppercase">{pendingMandates.cooldownSeconds.id}</label>
+                    <span className="text-indigo-400 font-black text-xs">{pendingMandates.cooldownSeconds.parameter}s</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="300"
+                    step="5"
+                    value={pendingMandates.cooldownSeconds.parameter}
+                    onChange={(e) => updateMandate('cooldownSeconds', { parameter: Number(e.target.value) })}
+                    className="slider slider-sm"
+                    style={{ '--value': `${(pendingMandates.cooldownSeconds.parameter / 300) * 100}%` } as any}
+                  />
+                  <p className="text-[10px] text-muted mt-2">{pendingMandates.cooldownSeconds.description}</p>
+                </div>
+
+                {/* Allowed Methods */}
+                <div className="card">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-white uppercase">Payment Methods</label>
+                    <span className="badge badge-success text-[10px] py-0">{pendingMandates.allowedMethods.id}</span>
+                  </div>
+                  <div className="tag-list mb-2">
+                    {(pendingMandates.allowedMethods.parameter as string[]).map(method => (
+                      <div key={method} className="tag text-[9px] bg-indigo-500/10 border-indigo-500/20 text-indigo-400 uppercase font-black">
+                        <span>{method}</span>
+                        <X size={10} className="tag-remove" onClick={() => {
+                          const current = pendingMandates.allowedMethods.parameter as string[];
+                          updateMandate('allowedMethods', { parameter: current.filter(m => m !== method) });
+                        }} />
                       </div>
                     ))}
                   </div>
-                  <p className="control-description mt-3">
-                    Transactions in these categories are always blocked, no exceptions.
-                  </p>
+                  <input
+                    type="text"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        const val = (e.target as HTMLInputElement).value;
+                        if (val) {
+                          const current = pendingMandates.allowedMethods.parameter as string[];
+                          if (!current.includes(val)) {
+                            updateMandate('allowedMethods', { parameter: [...current, val] });
+                            (e.target as HTMLInputElement).value = '';
+                          }
+                        }
+                      }
+                    }}
+                    placeholder="Add allowed method..."
+                    className="input-field text-[11px] py-1 h-8"
+                  />
                 </div>
               </div>
-
-              {/* HITL Triggers */}
-              <div className="control-group">
-                <label className="control-label flex items-center gap-2">
-                  <UserCheck size={16} className="text-amber-400" />
-                  HITL Triggers
-                </label>
-
-                <div className="card">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="text-sm font-semibold text-white">New Merchant Review</p>
-                      <p className="text-xs text-muted">Require approval for first-time vendors</p>
-                    </div>
-                    <label className="toggle">
-                      <input
-                        type="checkbox"
-                        checked={mandates.newMerchantAuth.parameter === true}
-                        onChange={(e) => updateMandate('newMerchantAuth', { parameter: e.target.checked })}
-                      />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === 'mandates' && (
-            <div className="space-y-4">
-              <p className="text-sm text-secondary mb-6">
-                These mandates define the governance rules that protect against various risks. Each mandate has specific parameters and enforcement levels.
-              </p>
-
-              {Object.keys(mandates).map((key) => {
-                const mandate = mandates[key as keyof FinancialMandates];
-                return (
-                  <div key={mandate.id} className="card">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className={`p-2 rounded-lg ${mandate.category === 'spending_limit' ? 'bg-indigo-600/20' :
-                          mandate.category === 'authorization' ? 'bg-emerald-600/20' :
-                            mandate.category === 'velocity' ? 'bg-amber-600/20' :
-                              'bg-rose-600/20'
-                        }`}>
-                        {mandate.category === 'spending_limit' ? <DollarSign size={20} className="text-indigo-400" /> :
-                          mandate.category === 'authorization' ? <UserCheck size={20} className="text-emerald-400" /> :
-                            mandate.category === 'velocity' ? <Zap size={20} className="text-amber-400" /> :
-                              <Lock size={20} className="text-rose-400" />}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1 justify-between">
-                          <h3 className="font-bold text-lg text-white">
-                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                          </h3>
-                          <span className={`badge ${mandate.severity === 'high' ? 'badge-danger' :
-                              mandate.severity === 'medium' ? 'badge-warning' :
-                                'badge-success'
-                            } text-xs`}>{mandate.id}</span>
-                        </div>
-
-                        <p className="text-sm text-secondary mb-3">{mandate.description}</p>
-
-                        <div className="p-3 bg-rose-900/10 rounded-lg border border-rose-500/20 mb-3">
-                          <p className="text-xs font-bold text-rose-400 mb-1">🛡️ GUARDS AGAINST:</p>
-                          <p className="text-sm text-secondary">{mandate.riskDisclosure}</p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs text-muted block mb-1 uppercase font-bold">Enforcement</label>
-                            <select
-                              value={mandate.enforcement}
-                              onChange={(e) => updateMandate(key as keyof FinancialMandates, { enforcement: e.target.value as any })}
-                              className="select-field text-xs py-1 h-8"
-                            >
-                              <option value="none">IGNORE (BYPASS)</option>
-                              <option value="soft_warning">SOFT WARNING</option>
-                              <option value="approval_required">APPROVAL REQUIRED</option>
-                              <option value="block">BLOCK (REJECT)</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-xs text-muted block mb-1 uppercase font-bold">Parameter</label>
-                            {typeof mandate.parameter === 'number' ? (
-                              <input
-                                type="number"
-                                value={mandate.parameter}
-                                onChange={(e) => updateMandate(key as keyof FinancialMandates, { parameter: Number(e.target.value) })}
-                                className="input-field text-xs py-1 h-8"
-                              />
-                            ) : typeof mandate.parameter === 'boolean' ? (
-                              <select
-                                value={mandate.parameter ? 'true' : 'false'}
-                                onChange={(e) => updateMandate(key as keyof FinancialMandates, { parameter: e.target.value === 'true' })}
-                                className="select-field text-xs py-1 h-8"
-                              >
-                                <option value="true">ENABLED</option>
-                                <option value="false">DISABLED</option>
-                              </select>
-                            ) : (
-                              <div className="text-xs bg-white/5 rounded px-2 py-1 border border-white/10 text-muted h-8 flex items-center italic">
-                                Array/Complex
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
       {/* RIGHT PANEL: Testing */}
       <div className="panel">
         <div className="panel-header">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-600 rounded-lg">
-              <Play size={24} className="text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-600 rounded-lg">
+                <Play size={24} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-black">Test Scenarios</h1>
+                <p className="text-sm text-muted">Try different transactions to see how your mandates respond</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-black">Test Scenarios</h1>
-              <p className="text-sm text-muted">Try different transactions to see how your mandates respond</p>
+
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2 px-2 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded text-emerald-500 text-[10px] font-black uppercase tracking-widest">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Governance Active
+              </div>
+              {hasPendingChanges && (
+                <div className="flex items-center gap-1 text-amber-500 text-[9px] font-bold uppercase">
+                  <AlertTriangle size={10} />
+                  Pending Deployment
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -583,7 +641,7 @@ export default function App() {
                   </div>
 
                   {lastResult.result.triggeredMandates.length > 0 && (
-                    <div>
+                    <div className="mb-4">
                       <p className="text-xs font-bold uppercase tracking-wider text-secondary mb-2">Triggered Mandates</p>
                       <div className="flex flex-wrap gap-2">
                         {lastResult.result.triggeredMandates.map(m => (
@@ -603,6 +661,14 @@ export default function App() {
                       </div>
                     </div>
                   )}
+
+                  <div className="pt-4 border-t border-white/5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Enforcement Context</p>
+                    <div className="flex gap-4 text-[10px] font-mono text-muted">
+                      <div>AUTH_LIMIT: <span className="text-white">${lastResult.config.confirmationThreshold.parameter}</span></div>
+                      <div>HARD_BLOCK: <span className="text-white">${lastResult.config.dailyAggregateLimit.parameter}</span></div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="card mt-4">
