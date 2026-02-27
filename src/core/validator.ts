@@ -31,7 +31,20 @@ export class GovernanceValidator {
             };
         }
 
-        // 2. Authorization Mandates: New Merchant Check
+        // 2. Sanctions & Watchlist Screening (Block-Before-Commit)
+        // Risk: Sanctions Evasion / Regulatory Non-Compliance (MAS Notice 626).
+        if (mandates.sanctionedEntities.parameter.includes(transaction.merchantName)) {
+            return {
+                allowed: false,
+                requiresApproval: false,
+                reason: `FAGF-FS Block: Merchant '${transaction.merchantName}' is on the sanctions watchlist.`,
+                mitigationRisk: mandates.sanctionedEntities.riskDisclosure,
+                severity: mandates.sanctionedEntities.severity,
+                triggeredMandates: [mandates.sanctionedEntities.id]
+            };
+        }
+
+        // 3. Authorization Mandates: New Merchant Check
         // Risk: Phishing / Merchant Impersonation.
         if (context.isNewMerchant && mandates.newMerchantAuth.parameter) {
             triggeredMandates.push(mandates.newMerchantAuth.id);
@@ -59,7 +72,22 @@ export class GovernanceValidator {
             };
         }
 
-        // 4. Velocity Mandates: Rate Limiting
+        // 4. Spending Mandates: Daily Aggregate Limit
+        // Risk: Cumulative overspend across multiple autonomous transactions.
+        const dailyTotal = history.reduce((sum, h) => sum + h.transaction.amount, 0);
+        if (dailyTotal + transaction.amount > mandates.dailyAggregateLimit.parameter) {
+            triggeredMandates.push(mandates.dailyAggregateLimit.id);
+            return {
+                allowed: false,
+                requiresApproval: false,
+                reason: `FAGF-FS Block: Transaction would exceed daily spending limit (S$${dailyTotal} spent + S$${transaction.amount} = S$${dailyTotal + transaction.amount} > S$${mandates.dailyAggregateLimit.parameter}).`,
+                mitigationRisk: mandates.dailyAggregateLimit.riskDisclosure,
+                severity: mandates.dailyAggregateLimit.severity,
+                triggeredMandates
+            };
+        }
+
+        // 5. Velocity Mandates: Rate Limiting
         // Risk: API Runaway / Autonomous Loops.
         const oneHourAgo = Date.now() - 3600000;
         const recentTxCount = history.filter(h => h.transaction.timestamp > oneHourAgo).length;
@@ -93,7 +121,28 @@ export class GovernanceValidator {
             }
         }
 
-        // 6. Authorization Mandates: Payment Channel Filtering
+        // 9. Duplicate / Repeat Payment Detection
+        // Risk: Structuring Attempts / Accidental Duplicate Payments.
+        if (mandates.duplicateDetectionWindow.parameter > 0) {
+            const windowStart = Date.now() - (mandates.duplicateDetectionWindow.parameter * 1000);
+            const duplicate = history.find(
+                h => h.transaction.merchantName === transaction.merchantName &&
+                     h.transaction.timestamp > windowStart
+            );
+            if (duplicate) {
+                triggeredMandates.push(mandates.duplicateDetectionWindow.id);
+                return {
+                    allowed: false,
+                    requiresApproval: true,
+                    reason: `FAGF-FS HITL: Repeat payment to '${transaction.merchantName}' detected within ${mandates.duplicateDetectionWindow.parameter}s window.`,
+                    mitigationRisk: mandates.duplicateDetectionWindow.riskDisclosure,
+                    severity: mandates.duplicateDetectionWindow.severity,
+                    triggeredMandates
+                };
+            }
+        }
+
+        // 10. Authorization Mandates: Payment Channel Filtering
         // Risk: High-Risk / Untrusted Payment Channels.
         if (!mandates.allowedMethods.parameter.includes(transaction.paymentMethod)) {
             triggeredMandates.push(mandates.allowedMethods.id);

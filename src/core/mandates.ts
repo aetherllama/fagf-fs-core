@@ -66,5 +66,23 @@ export const DEFAULT_MAS_MANDATES: FinancialMandates = {
         severity: 'medium',
         riskDisclosure: 'Restricts Payment to Verified Local Channels',
         description: 'Only allows autonomous usage of verified Singapore payment channels.'
+    },
+    sanctionedEntities: {
+        id: 'fagf-sanction-01',
+        category: 'financial_crime',
+        parameter: ['ShadowFinance Ltd', 'DarkPool Exchange'],
+        enforcement: 'block',
+        severity: 'high',
+        riskDisclosure: 'Sanctions & Watchlist Compliance (MAS Notice 626)',
+        description: 'Hard-blocks transactions to entities on the sanctions or watchlist.'
+    },
+    duplicateDetectionWindow: {
+        id: 'fagf-fair-01',
+        category: 'financial_crime',
+        parameter: 300,
+        enforcement: 'approval_required',
+        severity: 'medium',
+        riskDisclosure: 'Prevents Duplicate & Structuring Attempts',
+        description: 'Flags repeat payments to the same merchant within 5 minutes.'
     }
 };
