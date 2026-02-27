@@ -11,7 +11,8 @@ export type GovernanceCategory =
     | 'authorization'
     | 'spending_limit'
     | 'category_restriction'
-    | 'velocity';
+    | 'velocity'
+    | 'financial_crime';
 
 /**
  * The standard FAGF-FS mandate definition.
@@ -69,4 +70,6 @@ export interface FinancialMandates {
     cooldownSeconds: GovernanceMandate<number>;
     blockedCategories: GovernanceMandate<string[]>;
     allowedMethods: GovernanceMandate<string[]>;
+    sanctionedEntities: GovernanceMandate<string[]>;
+    duplicateDetectionWindow: GovernanceMandate<number>;
 }
