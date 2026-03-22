@@ -21,6 +21,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GovernanceValidator } from './core/validator';
 import { DEFAULT_MAS_MANDATES } from './core/mandates';
 import { FinancialMandates, GovernanceEnvelope, ValidationResult, GovernanceMandate } from './core/types';
+import NavigationBar, { AppView } from './components/NavigationBar';
+import RiskDimensionsPanel from './components/RiskDimensionsPanel';
+import MaterialityAssessmentPanel from './components/MaterialityAssessmentPanel';
+import FEATAlignmentPanel from './components/FEATAlignmentPanel';
+import SystemInventoryPanel from './components/SystemInventoryPanel';
 
 interface CustomMandates extends FinancialMandates {
   // Additional custom properties for the playground
@@ -75,7 +80,8 @@ export default function App() {
   ]);
   const [merchantInput, setMerchantInput] = useState('');
 
-  // No active tab needed for unified view
+  // Navigation State
+  const [activeView, setActiveView] = useState<AppView>('governance');
 
   // Scenario State
   const [customAmount, setCustomAmount] = useState(100);
@@ -163,6 +169,19 @@ export default function App() {
   };
 
   return (
+    <div className="app-container">
+      <NavigationBar activeView={activeView} onViewChange={setActiveView} />
+
+      {activeView !== 'governance' && (
+        <div className="mindforge-view">
+          {activeView === 'risk_dimensions' && <RiskDimensionsPanel activeMandates={activeMandates} />}
+          {activeView === 'materiality' && <MaterialityAssessmentPanel />}
+          {activeView === 'inventory' && <SystemInventoryPanel activeMandates={activeMandates} />}
+          {activeView === 'feat' && <FEATAlignmentPanel activeMandates={activeMandates} />}
+        </div>
+      )}
+
+      {activeView === 'governance' && (
     <div className="playground-layout">
       {/* LEFT PANEL: Configuration */}
       <div className="panel panel-left">
@@ -700,6 +719,8 @@ export default function App() {
           )}
         </div>
       </div>
+    </div>
+      )}
     </div>
   );
 }

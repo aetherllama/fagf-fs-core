@@ -24,6 +24,7 @@ export interface GovernanceMandate<T = any> {
     severity: Severity;
     riskDisclosure: string;
     description: string;
+    mindForgeDimensions?: import('./mindforge-types').MindForgeRiskDimension[];
 }
 
 /**
