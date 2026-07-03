@@ -1,10 +1,12 @@
 # SAFR: Safeguards for Agentic Finance at Runtime
 
-**Version: 2.0.0** | MAS Industry White Paper Reference Implementation
+**Version: 2.0.0** | Active contribution to the MAS SAFR working group
 
 ## About
 
-**SAFR** is a comprehensive specification and reference implementation for governing autonomous AI agents in financial services. Published by the Monetary Authority of Singapore (MAS) and developed with leading financial institutions and fintechs under the BuildFin.ai initiative, SAFR defines how agents can be authorized to act, how their actions are validated in real time, and how every governance decision is recorded before execution occurs.
+This repository is an active working implementation that contributes to the **SAFR (Safeguards for Agentic Finance at Runtime)** framework — an industry initiative led by the Monetary Authority of Singapore (MAS) under the BuildFin.ai programme. SAFR defines how AI agents in financial services can be authorized to act, how their actions are validated in real time, and how every governance decision is recorded before execution occurs.
+
+Work in this repo feeds directly into the SAFR specification: the Controls Repository schema, Disposition Engine logic, disposition outcome taxonomy, and audit log structure developed here are aligned with and intended to inform the evolving MAS SAFR standard.
 
 ### Background
 
@@ -12,8 +14,9 @@ The rapid advancement of AI agents capable of autonomous decision-making has cre
 
 ### Who Is This For?
 
+- **SAFR Contributors**: Practitioners and institutions actively shaping the SAFR specification
 - **Financial Institutions**: Banks, fintechs, and payment processors deploying AI agents for autonomous operations
-- **Regulatory Bodies**: Organizations seeking standardized frameworks for AI governance in finance
+- **Regulatory Bodies**: Organizations seeking working implementations of AI governance frameworks in finance
 - **AI Developers**: Teams building autonomous agents that handle financial transactions
 - **Compliance Officers**: Professionals responsible for ensuring AI systems meet regulatory requirements
 - **Researchers**: Academics studying safe AI deployment in high-stakes domains
@@ -196,8 +199,14 @@ Institutions can adapt the Controls Repository to their own technology, risk, an
 - **Interoperable**: Works with any AI agent architecture via native or gateway integration
 - **Auditable**: Tamper-evident log of every governance decision
 
+## Contributing to SAFR
+
+This is an active working repository. Contributions are used to develop and refine the SAFR specification, validate the Controls Repository schema against real-world financial use cases, and test Disposition Engine logic across institution types.
+
+If you are working on agentic finance governance and want to contribute test cases, control definitions, or implementation patterns, open an issue or pull request. Findings from this repo feed into the MAS SAFR working group.
+
 ---
 
-**Reference implementation aligned with the MAS SAFR White Paper (2026)**
+**Active SAFR working repository — aligned with the MAS SAFR White Paper (2026)**
 
-*For questions or feedback, please open an issue in this repository.*
+*For questions or feedback, open an issue in this repository.*

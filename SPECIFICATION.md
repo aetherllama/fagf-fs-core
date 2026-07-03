@@ -1,5 +1,5 @@
 # Safeguards for Agentic Finance at Runtime (SAFR)
-**Version: 2.0.0** | MAS Industry White Paper Reference Implementation
+**Version: 2.0.0** | Active working specification — contributing to the MAS SAFR initiative
 
 ## 1. Introduction & Purpose
 
@@ -392,5 +392,12 @@ Institutions can extend SAFR by defining custom controls in the Controls Reposit
 
 ---
 
-*End of Specification*
-*Aligned with the MAS SAFR White Paper (2026)*
+## 10. Contributing
+
+This specification is a living document developed as part of active SAFR working group contributions. The data models, control taxonomies, disposition logic, and MindForge integration patterns defined here are implemented in the accompanying source code and iterated against real financial use cases.
+
+Proposed changes to control definitions, disposition outcomes, or risk dimension mappings should be raised as issues or pull requests. All changes are considered in the context of alignment with the MAS SAFR White Paper and MindForge guidelines.
+
+---
+
+*Active working specification — contributing to the MAS SAFR initiative (2026)*
