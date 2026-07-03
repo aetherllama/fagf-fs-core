@@ -47,7 +47,7 @@ export default function FEATAlignmentPanel({ activeMandates }: Props) {
       <div className="mindforge-panel-header">
         <div className="flex-1">
           <h2 className="text-xl font-black text-white">FEAT Principles Alignment</h2>
-          <p className="text-sm text-muted mt-1">Fairness, Ethics, Accountability, Transparency -- MAS FEAT Framework</p>
+          <p className="text-sm text-muted mt-1">Fairness, Ethics, Accountability, Transparency — MAS FEAT Framework underpinning SAFR</p>
         </div>
       </div>
 

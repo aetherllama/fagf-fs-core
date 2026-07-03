@@ -192,8 +192,8 @@ export default function App() {
                 <Shield size={24} className="text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-black text-white">Governance Control</h1>
-                <p className="text-sm text-muted">Unified active policy management</p>
+                <h1 className="text-xl font-black text-white">SAFR Controls Repository</h1>
+                <p className="text-sm text-muted">Policy-bound execution & real-time validation</p>
               </div>
             </div>
             <button onClick={resetToDefaults} className="btn btn-secondary btn-sm">
@@ -509,14 +509,14 @@ export default function App() {
               </div>
               <div>
                 <h1 className="text-xl font-black">Test Scenarios</h1>
-                <p className="text-sm text-muted">Try different transactions to see how your mandates respond</p>
+                <p className="text-sm text-muted">Try different actions to see how the SAFR Disposition Engine responds</p>
               </div>
             </div>
 
             <div className="flex flex-col items-end gap-1">
               <div className="flex items-center gap-2 px-2 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded text-emerald-500 text-[10px] font-black uppercase tracking-widest">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Governance Active
+                SAFR Active
               </div>
               {hasPendingChanges && (
                 <div className="flex items-center gap-1 text-amber-500 text-[9px] font-bold uppercase">
@@ -658,7 +658,7 @@ export default function App() {
 
                   {lastResult.result.triggeredMandates.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-xs font-bold uppercase tracking-wider text-secondary mb-2">Triggered Mandates</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-secondary mb-2">Triggered SAFR Controls</p>
                       <div className="flex flex-wrap gap-2">
                         {lastResult.result.triggeredMandates.map(m => (
                           <span
@@ -679,10 +679,10 @@ export default function App() {
                   )}
 
                   <div className="pt-4 border-t border-white/5">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Enforcement Context</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">SAFR Disposition Context</p>
                     <div className="flex gap-4 text-[10px] font-mono text-muted">
-                      <div>AUTH_LIMIT: <span className="text-white">${lastResult.config.confirmationThreshold.parameter}</span></div>
-                      <div>HARD_BLOCK: <span className="text-white">${lastResult.config.dailyAggregateLimit.parameter}</span></div>
+                      <div>SAFR_HITL_LIMIT: <span className="text-white">${lastResult.config.confirmationThreshold.parameter}</span></div>
+                      <div>SAFR_REJECT_LIMIT: <span className="text-white">${lastResult.config.dailyAggregateLimit.parameter}</span></div>
                     </div>
                   </div>
                 </div>
@@ -694,13 +694,13 @@ export default function App() {
                       <h5 className="font-bold mb-2">Understanding This Result</h5>
                       <div className="text-sm text-secondary space-y-2">
                         {lastResult.result.allowed && !lastResult.result.requiresApproval && (
-                          <p>This transaction passed all mandate checks and was approved automatically. The amount is within your auto-approve threshold and no blocking rules were triggered.</p>
+                          <p>The SAFR Disposition Engine approved this for automatic execution. All Controls Repository checks passed and no blocking rules were triggered.</p>
                         )}
                         {lastResult.result.requiresApproval && (
-                          <p>This transaction requires <strong>Human-in-the-Loop (HITL)</strong> approval because it exceeded your configured thresholds or involved a new merchant.</p>
+                          <p>The SAFR Disposition Engine escalated this to <strong>Human-in-the-Loop (HITL)</strong> review because it exceeded configured thresholds or involved an unverified agent identity.</p>
                         )}
                         {!lastResult.result.allowed && (
-                          <p>This transaction was <strong>hard-blocked</strong> due to a categorical restriction. This is a safety measure that cannot be overridden without changing the policy.</p>
+                          <p>The SAFR Disposition Engine issued a <strong>hard reject</strong> due to a categorical restriction. This control cannot be overridden without updating the Controls Repository policy.</p>
                         )}
                       </div>
                     </div>

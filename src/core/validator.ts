@@ -7,8 +7,9 @@ import {
 
 export class GovernanceValidator {
     /**
-     * The core FAGF-FS deterministic validation logic.
-     * Evaluates a proposed transaction against a set of financial mandates.
+     * The SAFR Disposition Engine — real-time validation of proposed agent actions
+     * against the Controls Repository. Produces one of four dispositions:
+     * auto-execute, reject, human-review (HITL), or flag-and-monitor.
      */
     static validate(
         envelope: GovernanceEnvelope,
@@ -24,7 +25,7 @@ export class GovernanceValidator {
             return {
                 allowed: false,
                 requiresApproval: false,
-                reason: `FAGF-FS Block: Category '${transaction.category}' is strictly restricted.`,
+                reason: `SAFR Reject: Category '${transaction.category}' is strictly restricted.`,
                 mitigationRisk: mandates.blockedCategories.riskDisclosure,
                 severity: mandates.blockedCategories.severity,
                 triggeredMandates: [mandates.blockedCategories.id]
@@ -38,7 +39,7 @@ export class GovernanceValidator {
             return {
                 allowed: false,
                 requiresApproval: true,
-                reason: `FAGF-FS HITL: New merchant '${transaction.merchantName}' requires manual authorization.`,
+                reason: `SAFR HITL: New merchant '${transaction.merchantName}' requires manual authorization.`,
                 mitigationRisk: mandates.newMerchantAuth.riskDisclosure,
                 severity: mandates.newMerchantAuth.severity,
                 triggeredMandates
@@ -52,7 +53,7 @@ export class GovernanceValidator {
             return {
                 allowed: false,
                 requiresApproval: true,
-                reason: `FAGF-FS HITL: Transaction amount $${transaction.amount} exceeds autonomous limit ($${mandates.confirmationThreshold.parameter}).`,
+                reason: `SAFR HITL: Transaction amount $${transaction.amount} exceeds autonomous limit ($${mandates.confirmationThreshold.parameter}).`,
                 mitigationRisk: mandates.confirmationThreshold.riskDisclosure,
                 severity: mandates.confirmationThreshold.severity,
                 triggeredMandates
@@ -68,7 +69,7 @@ export class GovernanceValidator {
             return {
                 allowed: false,
                 requiresApproval: true,
-                reason: `FAGF-FS HITL: Velocity limit exceeded (${mandates.rateLimitPerHour.parameter} tx/hr).`,
+                reason: `SAFR HITL: Velocity limit exceeded (${mandates.rateLimitPerHour.parameter} tx/hr).`,
                 mitigationRisk: mandates.rateLimitPerHour.riskDisclosure,
                 severity: mandates.rateLimitPerHour.severity,
                 triggeredMandates
@@ -85,7 +86,7 @@ export class GovernanceValidator {
                 return {
                     allowed: false,
                     requiresApproval: true,
-                    reason: `FAGF-FS HITL: Cooling period active. Wait ${Math.ceil(mandates.cooldownSeconds.parameter - secondsSinceLast)}s.`,
+                    reason: `SAFR HITL: Cooling period active. Wait ${Math.ceil(mandates.cooldownSeconds.parameter - secondsSinceLast)}s.`,
                     mitigationRisk: mandates.cooldownSeconds.riskDisclosure,
                     severity: mandates.cooldownSeconds.severity,
                     triggeredMandates
@@ -100,7 +101,7 @@ export class GovernanceValidator {
             return {
                 allowed: false,
                 requiresApproval: true,
-                reason: `FAGF-FS HITL: Payment method '${transaction.paymentMethod}' is untrusted for autonomous use.`,
+                reason: `SAFR HITL: Payment method '${transaction.paymentMethod}' is untrusted for autonomous use.`,
                 mitigationRisk: mandates.allowedMethods.riskDisclosure,
                 severity: mandates.allowedMethods.severity,
                 triggeredMandates

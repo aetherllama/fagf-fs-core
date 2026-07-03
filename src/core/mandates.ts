@@ -1,20 +1,20 @@
 import { FinancialMandates } from './types';
 
 /**
- * Reference Financial Mandates for a Singapore-aligned (MAS) profile.
+ * SAFR Controls Repository — MAS-aligned reference mandates for Singapore financial agents.
  */
 export const DEFAULT_MAS_MANDATES: FinancialMandates = {
     newMerchantAuth: {
-        id: 'fagf-auth-01',
+        id: 'safr-auth-01',
         category: 'authorization',
         parameter: true,
         enforcement: 'approval_required',
         severity: 'high',
         riskDisclosure: 'Prevents Phishing & Merchant Impersonation',
-        description: 'Requires manual verification for merchants not in the agent\'s historical trust list.'
+        description: 'Requires human review for merchants not in the agent\'s historical trust list.'
     },
     confirmationThreshold: {
-        id: 'fagf-limit-01',
+        id: 'safr-limit-01',
         category: 'spending_limit',
         parameter: 50,
         enforcement: 'approval_required',
@@ -23,43 +23,43 @@ export const DEFAULT_MAS_MANDATES: FinancialMandates = {
         description: 'Autonomous payments above S$50 require explicit user cryptographic approval.'
     },
     dailyAggregateLimit: {
-        id: 'fagf-limit-02',
+        id: 'safr-limit-02',
         category: 'spending_limit',
         parameter: 200,
         enforcement: 'block',
         severity: 'high',
         riskDisclosure: 'Limits Total Daily Exposure for Autonomous Agents',
-        description: 'Strict block if the total daily spending exceeds S$200.'
+        description: 'Hard reject if total daily spending by the agent exceeds S$200.'
     },
     rateLimitPerHour: {
-        id: 'fagf-velocity-01',
+        id: 'safr-velocity-01',
         category: 'velocity',
         parameter: 5,
         enforcement: 'approval_required',
         severity: 'medium',
         riskDisclosure: 'Prevents API Runaway / Autonomous Fail-loops',
-        description: 'Max 5 autonomous transactions per hour.'
+        description: 'Max 5 autonomous transactions per hour before HITL escalation.'
     },
     cooldownSeconds: {
-        id: 'fagf-velocity-02',
+        id: 'safr-velocity-02',
         category: 'velocity',
         parameter: 60,
         enforcement: 'approval_required',
         severity: 'low',
-        riskDisclosure: 'Ensures Observation Period Between Actions',
+        riskDisclosure: 'Ensures Observation Window Between Agent Actions',
         description: 'Minimum 60-second delay between consecutive autonomous executions.'
     },
     blockedCategories: {
-        id: 'fagf-cat-01',
+        id: 'safr-cat-01',
         category: 'category_restriction',
         parameter: ['Ungoverned Gambling', 'Unregulated Crypto', 'Offshore Investment', 'Job Scams'],
         enforcement: 'block',
         severity: 'high',
         riskDisclosure: 'Regulatory Compliance & High-Risk Mitigation',
-        description: 'Strictly blocks transactions to restricted or illegal categories.'
+        description: 'Hard reject for transactions matching restricted or illegal category labels.'
     },
     allowedMethods: {
-        id: 'fagf-auth-02',
+        id: 'safr-auth-02',
         category: 'authorization',
         parameter: ['PayNow', 'NETS', 'FAST', 'DBS PayLah!'],
         enforcement: 'approval_required',

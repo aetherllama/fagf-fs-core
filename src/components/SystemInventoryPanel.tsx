@@ -63,7 +63,7 @@ export default function SystemInventoryPanel({ activeMandates }: Props) {
       <div className="mindforge-panel-header">
         <div className="flex-1">
           <h2 className="text-xl font-black text-white">AI System Inventory</h2>
-          <p className="text-sm text-muted mt-1">Registry of AI systems under MindForge risk governance</p>
+          <p className="text-sm text-muted mt-1">Registry of AI systems under SAFR & MindForge risk governance</p>
         </div>
         <button onClick={addSystem} className="btn btn-primary btn-sm">
           <Plus size={14} />

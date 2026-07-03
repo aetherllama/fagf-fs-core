@@ -140,9 +140,9 @@ export default function MaterialityAssessmentPanel() {
           <div className="flex-1">
             <h4 className="text-sm font-bold text-white mb-1">About Materiality Assessment</h4>
             <p className="text-sm text-secondary">
-              Risk materiality determines the level of governance controls required for an AI system.
+              Risk materiality determines the level of SAFR controls required for an AI system.
               The three-axis model (Impact &times; Complexity &times; Reliance) produces a score from 1 to 125,
-              mapped to four risk tiers that inform control proportionality per MAS Project MindForge guidelines.
+              mapped to four risk tiers that inform control proportionality per MAS Project MindForge and SAFR guidelines.
             </p>
           </div>
         </div>

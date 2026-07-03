@@ -1,6 +1,6 @@
 /**
- * FAGF-FS (Foundational Agentic Governance Framework for Financial Services)
- * Core Type Definitions
+ * SAFR (Safeguards for Agentic Finance at Runtime)
+ * Core Type Definitions — MAS Industry White Paper
  */
 
 export type Severity = 'low' | 'medium' | 'high';
@@ -14,10 +14,10 @@ export type GovernanceCategory =
     | 'velocity';
 
 /**
- * The standard FAGF-FS mandate definition.
+ * The standard SAFR mandate definition (Controls Repository entry).
  */
 export interface GovernanceMandate<T = any> {
-    id: string; // Standard FAGF-FS ID (e.g., 'fagf-limit-01')
+    id: string; // Standard SAFR ID (e.g., 'safr-limit-01')
     category: GovernanceCategory;
     parameter: T;
     enforcement: EnforcementAction;
@@ -28,7 +28,7 @@ export interface GovernanceMandate<T = any> {
 }
 
 /**
- * The standard FAGF-FS governance envelope for transaction proposals.
+ * The standard SAFR governance envelope for proposed agent actions.
  */
 export interface GovernanceEnvelope {
     transaction: {
@@ -48,7 +48,7 @@ export interface GovernanceEnvelope {
 }
 
 /**
- * The result structure returned by a FAGF-FS validator.
+ * The result structure returned by the SAFR Disposition Engine.
  */
 export interface ValidationResult {
     allowed: boolean;
@@ -60,7 +60,7 @@ export interface ValidationResult {
 }
 
 /**
- * Standard Financial Mandates (MAS/AP2 Aligned)
+ * Standard SAFR Controls Repository — MAS-aligned financial mandates.
  */
 export interface FinancialMandates {
     newMerchantAuth: GovernanceMandate<boolean>;

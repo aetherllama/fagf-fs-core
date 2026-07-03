@@ -23,7 +23,7 @@ export default function NavigationBar({ activeView, onViewChange }: NavigationBa
         <div className="p-1.5 bg-indigo-600 rounded-lg">
           <Shield size={18} className="text-white" />
         </div>
-        <span className="text-sm font-black text-white tracking-tight whitespace-nowrap">FAGF-FS</span>
+        <span className="text-sm font-black text-white tracking-tight whitespace-nowrap">SAFR</span>
       </div>
       <div className="flex items-center gap-1 overflow-x-auto">
         {NAV_TABS.map(tab => (

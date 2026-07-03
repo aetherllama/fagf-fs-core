@@ -38,7 +38,7 @@ export default function RiskDimensionsPanel({ activeMandates }: Props) {
       <div className="mindforge-panel-header">
         <div>
           <h2 className="text-xl font-black text-white">Risk Dimensions Assessment</h2>
-          <p className="text-sm text-muted mt-1">MAS Project MindForge -- 7 AI risk management dimensions</p>
+          <p className="text-sm text-muted mt-1">MAS Project MindForge — 7 AI risk dimensions underpinning SAFR controls</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
