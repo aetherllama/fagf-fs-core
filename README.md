@@ -1,14 +1,14 @@
-# FAGF-FS: Foundational Agentic Governance Framework for Financial Services
+# SAFR: Safeguards for Agentic Finance at Runtime
 
-**Version: 1.0.0-Stable**
+**Version: 2.0.0** | MAS Industry White Paper Reference Implementation
 
 ## About
 
-**FAGF-FS** is a comprehensive specification and reference implementation for governing autonomous AI agents in financial services. As artificial intelligence transitions from advisory roles to autonomous transaction execution, this framework provides the architectural blueprints, safety protocols, and regulatory alignment needed to deploy AI agents responsibly in production financial systems.
+**SAFR** is a comprehensive specification and reference implementation for governing autonomous AI agents in financial services. Published by the Monetary Authority of Singapore (MAS) and developed with leading financial institutions and fintechs under the BuildFin.ai initiative, SAFR defines how agents can be authorized to act, how their actions are validated in real time, and how every governance decision is recorded before execution occurs.
 
 ### Background
 
-The rapid advancement of AI agents capable of autonomous decision-making has created a critical gap: **how do we ensure these agents operate safely within financial regulations while maintaining the speed and efficiency that makes them valuable?** Traditional post-execution auditing is insufficient when agents can execute transactions in milliseconds. FAGF-FS addresses this by introducing **pre-execution governance** through deterministic validation.
+The rapid advancement of AI agents capable of autonomous decision-making has created a critical gap: **how do we ensure these agents operate safely within financial regulations while maintaining the speed and efficiency that makes them valuable?** Traditional post-execution auditing is insufficient when agents can execute transactions in milliseconds. SAFR addresses this by introducing **pre-execution governance** through a real-time Disposition Engine.
 
 ### Who Is This For?
 
@@ -18,65 +18,44 @@ The rapid advancement of AI agents capable of autonomous decision-making has cre
 - **Compliance Officers**: Professionals responsible for ensuring AI systems meet regulatory requirements
 - **Researchers**: Academics studying safe AI deployment in high-stakes domains
 
-### What Makes FAGF-FS Different?
+## What is SAFR?
 
-Unlike general AI safety frameworks, FAGF-FS is purpose-built for financial services with:
-- **Regulatory Mapping**: Direct alignment with MAS, GDPR, ISO 20022, and other financial standards
-- **Deterministic Validation**: Same input always produces same output - critical for auditing
-- **Financial-First Design**: Built-in concepts like spending limits, velocity controls, and HITL thresholds
-- **Production-Ready**: Reference implementation with real-world mandate examples
+The **Safeguards for Agentic Finance at Runtime (SAFR)** framework provides a set of governance checkpoints that verify and record an AI agent's proposed actions before execution. SAFR builds on MAS Project MindForge's AI Risk Management toolkit with four safeguard principles embedded into system operations:
 
-## What is FAGF-FS?
-
-
-The **Foundational Agentic Governance Framework for Financial Services (FAGF-FS)** is a standardized specification for building safe, compliant, and auditable autonomous AI agents in financial ecosystems. As AI agents evolve from advisory tools to autonomous executors of financial transactions, FAGF-FS provides the architectural blueprints and operational mandates necessary to ensure every action is governed by human-defined policy and regulatory requirements.
+1. **Policy-Bound Execution** — all agent actions must comply with pre-configured institutional controls
+2. **Real-Time Validation** — checks happen before execution, not after
+3. **Auditability** — every governance decision is captured in a tamper-evident audit log
+4. **Interoperability** — works across agent architectures via native integration or gateway model
 
 ### The Problem
 
 Modern AI agents can propose and execute financial transactions autonomously, but without proper governance:
 - **Risk**: Agents could execute unauthorized high-value transactions
 - **Compliance**: Regulatory requirements (MAS, GDPR, AML) may be violated
-- **Safety**: PII leakage, hallucinations, or reasoning errors could cause harm
+- **Safety**: Hallucinations or reasoning errors could cause financial harm
 - **Auditability**: Lack of transparency in decision-making processes
 
 ### The Solution
 
-FAGF-FS introduces a **deterministic validation layer** that sits between the AI agent and financial rails, ensuring:
-- ✅ **Immutability**: Governance rules are enforced before execution, not after
-- ✅ **Interpretability**: Every decision has a verifiable audit trail
-- ✅ **Regulatory Parity**: Financial regulations are mapped into executable code
-- ✅ **Human-in-the-Loop**: High-risk actions require explicit human approval
+SAFR introduces a **Disposition Engine** that sits between the AI agent and financial rails, providing four possible outcomes for every proposed action:
 
-## Core Concepts
+- ✅ **Auto-Execute** — action approved for immediate execution
+- 🚫 **Reject** — action hard-blocked by a categorical control
+- ⏸️ **HITL Escalation** — action escalated for human review
+- 👁️ **Flag & Monitor** — action proceeds but is flagged in the audit log
 
-### 1. Governance Envelope
-Every agent action is wrapped in a structured envelope containing:
-- **Transaction**: The proposed financial action (amount, merchant, category)
-- **Reasoning**: The agent's explanation for why it's taking this action
-- **Context**: Metadata like merchant history, risk scores, and flags
+## SAFR Architecture
 
-### 2. Mandate Stack
-A collection of deterministic rules that define what's allowed:
-- **Authorization Mandates**: New merchant checks, confirmation thresholds
-- **Spending Mandates**: Transaction limits, approval requirements
-- **Velocity Mandates**: Rate limiting, cooldown periods
-- **Custom Mandates**: Region-specific rules (e.g., Singapore MAS compliance, PII protection)
+### Four Core Components
 
-### 3. Tiered Validation Logic (TVL)
-The validator evaluates mandates in priority order:
-1. **Block-Before-Commit**: Hard blocks (e.g., gambling, unlicensed activities)
-2. **Human-in-the-Loop (HITL)**: Flagged for approval (e.g., high-value transactions)
-3. **Autonomous Execution**: Approved for immediate execution
-4. **Shadow Logging**: Logged for audit but not blocked
+| Component | Description |
+| :--- | :--- |
+| **Agent Identity** | Verifies the AI agent's credentials and authority before any action is evaluated |
+| **Controls Repository** | Stores institutional policies, risk parameters, and mandate definitions |
+| **Disposition Engine** | Evaluates proposed actions against the Controls Repository in real time |
+| **Audit Log** | Creates a tamper-evident record of every governance decision |
 
-### 4. Deterministic Validator
-A standalone service that:
-- Receives governance envelopes from agents
-- Evaluates them against the mandate stack
-- Returns a validation result (APPROVED, BLOCKED, or HITL)
-- Maintains an immutable audit log
-
-## How It Works
+### How It Works
 
 ```
 ┌─────────────────┐
@@ -85,34 +64,34 @@ A standalone service that:
 └────────┬────────┘
          │
          ▼
-┌─────────────────────────────────┐
-│  Governance Envelope            │
-│  ┌───────────────────────────┐  │
-│  │ Transaction: $2,500       │  │
-│  │ Merchant: Apple Inc       │  │
-│  │ Reasoning: "New laptop"   │  │
-│  │ Context: isNewMerchant=no │  │
-│  └───────────────────────────┘  │
-└────────┬────────────────────────┘
+┌──────────────────────────────────────┐
+│  SAFR Governance Envelope            │
+│  ┌────────────────────────────────┐  │
+│  │ Transaction: $2,500            │  │
+│  │ Merchant: Apple Inc            │  │
+│  │ Agent Reasoning: "New laptop"  │  │
+│  │ Context: isNewMerchant=false   │  │
+│  └────────────────────────────────┘  │
+└────────┬─────────────────────────────┘
          │
          ▼
-┌─────────────────────────────────┐
-│  Deterministic Validator        │
-│  ┌───────────────────────────┐  │
-│  │ ✓ Check Category Block    │  │
-│  │ ✓ Check Spending Limit    │  │
-│  │ ⚠ Exceeds $1k threshold   │  │
-│  │ ✓ Check PII Leakage       │  │
-│  │ ✓ Check Content Safety    │  │
-│  └───────────────────────────┘  │
-│  Result: HITL Required          │
-└────────┬────────────────────────┘
+┌──────────────────────────────────────┐
+│  SAFR Disposition Engine             │
+│  ┌────────────────────────────────┐  │
+│  │ 1. Verify Agent Identity       │  │
+│  │ 2. Check Controls Repository   │  │
+│  │    ✓ Category not blocked      │  │
+│  │    ⚠ Exceeds HITL threshold    │  │
+│  │    ✓ Payment method allowed    │  │
+│  └────────────────────────────────┘  │
+│  Disposition: HITL Escalation        │
+└────────┬─────────────────────────────┘
          │
          ▼
-┌─────────────────┐
-│  Human Approver │
-│  (Reviews)      │
-└────────┬────────┘
+┌─────────────────┐     ┌──────────────────┐
+│  Human Approver │     │  Audit Log       │
+│  (Reviews)      │     │  (Records)       │
+└────────┬────────┘     └──────────────────┘
          │
          ▼
 ┌─────────────────┐
@@ -123,31 +102,39 @@ A standalone service that:
 
 ## Key Features
 
-### 🔒 Security & Compliance
-- **Categorical Blocklists**: Prevent transactions in prohibited categories (gambling, high-risk investments)
-- **PII Protection**: Detect and block Singapore NRIC/FIN numbers in agent reasoning
-- **MAS Compliance**: Enforce licensing requirements for financial services
-- **Content Safety**: Filter profanity, scam keywords, and malicious intent
+### Controls Repository
+- **Categorical Blocklists**: Hard reject for prohibited categories (gambling, unlicensed activities)
+- **Spending Controls**: Configurable thresholds for autonomous vs. HITL execution
+- **Velocity Controls**: Rate limiting to prevent runaway agent behavior
+- **Authorization Controls**: Agent identity verification, new merchant checks, payment channel restrictions
 
-### 💰 Financial Controls
-- **Spending Limits**: Configurable thresholds for autonomous vs. human approval
-- **Velocity Controls**: Rate limiting to prevent rapid-fire transactions
-- **New Merchant Authorization**: Require approval for first-time vendors
-- **Payment Method Restrictions**: Control which payment methods are allowed
+### Disposition Engine
+- **Real-Time**: Validates before execution, not after
+- **Deterministic**: Same input always produces same disposition
+- **Stateless**: Can be horizontally scaled
+- **Interoperable**: Native integration or gateway model
 
-### 📊 Observability
-- **Audit Trail**: Every validation decision is logged with full context
-- **Triggered Mandates**: See exactly which rules were evaluated and why
-- **Reasoning Transparency**: Agent explanations are preserved and auditable
-- **Risk Scoring**: Contextual risk assessment for every transaction
+### Audit Log
+- **Tamper-Evident**: Every disposition is logged with full context
+- **Triggered Controls**: See exactly which rules fired and why
+- **Agent Reasoning**: Agent explanations are preserved alongside the governance decision
+- **Governance Signature**: Financial rails can require a valid SAFR signature before accepting actions
 
-## 📖 Documentation
+## Regulatory Alignment
+
+SAFR is built on MAS Project MindForge and aligns with:
+- **MAS SAFR White Paper**: Primary specification source
+- **MAS Project MindForge**: AI Risk Management Toolkit — 7 risk dimensions
+- **MAS FEAT Principles**: Fairness, Ethics, Accountability, Transparency
+- **Singapore PDPA**: Personal data protection and reasoning transparency
+- **MAS AML/CFT Requirements**: Enforced through category and authorization controls
+
+## Documentation
 
 - **[SPECIFICATION.md](./SPECIFICATION.md)**: Complete technical specification
-- **[Sample Application](./src)**: Reference TypeScript implementation
-- **[AI-Guardrails-Sandbox](../AI-Guardrails-Sandbox)**: Interactive demo with live validation
+- **[Source Implementation](./src)**: Reference TypeScript implementation
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Installation
 ```bash
@@ -158,69 +145,59 @@ npm run dev
 ### Quick Example
 ```typescript
 import { GovernanceValidator } from './core/validator';
-import { STANDARD_MANDATES } from './core/mandates';
+import { DEFAULT_MAS_MANDATES } from './core/mandates';
 
 const envelope = {
   transaction: {
     amount: 500,
     merchantName: 'Microsoft',
     category: 'Software Subscription',
-    // ...
+    paymentMethod: 'PayNow',
+    destination: 'microsoft',
+    timestamp: Date.now(),
   },
   reasoning: 'Monthly Office 365 renewal',
-  context: { isNewMerchant: false }
+  context: { isNewMerchant: false, historyDepth: 12, riskScore: 1 }
 };
 
 const result = GovernanceValidator.validate(
-  envelope, 
-  STANDARD_MANDATES, 
+  envelope,
+  DEFAULT_MAS_MANDATES,
   []
 );
 
-console.log(result.allowed); // true
-console.log(result.reason);  // "Transaction approved"
+// Disposition Engine outcomes:
+// result.allowed === true              → Auto-Execute
+// result.requiresApproval === true     → HITL Escalation
+// result.allowed === false && !req...  → Reject
+console.log(result.allowed);   // true
+console.log(result.reason);    // undefined (auto-execute)
 ```
 
 ## Use Cases
 
 ### 1. Autonomous Expense Management
-AI agents can autonomously pay recurring bills, office supplies, and subscriptions while requiring human approval for large purchases.
+AI agents autonomously pay recurring bills and subscriptions while HITL escalation triggers for large or new-vendor purchases.
 
-### 2. Compliance-First Trading
-Ensure all trading activities comply with MAS regulations, blocking unlicensed activities and flagging high-risk transactions.
+### 2. Agent-Assisted Payments & Treasury
+Wealth management and treasury workflows bounded by institutional spending controls and velocity limits.
 
-### 3. Privacy-Preserving Operations
-Automatically detect and prevent PII leakage in agent reasoning, protecting customer data.
+### 3. Client Engagement
+AI agents generate client insights and draft materials within approved content boundaries, with full audit trail.
 
-### 4. Multi-Region Deployment
-Extend the framework with region-specific mandates (Singapore, EU, US) while maintaining a consistent validation architecture.
+### 4. Multi-Institution Deployment
+Institutions can adapt the Controls Repository to their own technology, risk, and compliance systems while maintaining SAFR interoperability.
 
 ## Architecture Highlights
 
-- **Deterministic**: Same input always produces same output
-- **Stateless**: Validator can be horizontally scaled
-- **Extensible**: Add custom mandates without changing core logic
-- **Framework-Agnostic**: Works with any AI agent architecture
-- **Language-Agnostic**: Specification can be implemented in any language
-
-## Regulatory Alignment
-
-FAGF-FS provides templates for mapping to:
-- **MAS (Monetary Authority of Singapore)**: Financial services licensing, AML/CFT
-- **GDPR**: Personal data protection, PII handling
-- **ISO 20022**: Financial messaging standards
-- **PCI-DSS**: Payment card industry security
-
-## Contributing
-
-This is a conceptual framework maintained as a reference implementation. For production use, adapt the specification to your specific regulatory and operational requirements.
-
-## License
-
-MIT License - See LICENSE file for details
+- **Policy-Bound**: All agent actions validated against the Controls Repository before execution
+- **Deterministic**: Same input always produces same disposition
+- **Stateless**: Disposition Engine can be horizontally scaled
+- **Interoperable**: Works with any AI agent architecture via native or gateway integration
+- **Auditable**: Tamper-evident log of every governance decision
 
 ---
 
-**Maintained by the Agentic Financial Standards Org (Conceptual)**
+**Reference implementation aligned with the MAS SAFR White Paper (2026)**
 
 *For questions or feedback, please open an issue in this repository.*

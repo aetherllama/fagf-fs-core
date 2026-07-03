@@ -1,362 +1,396 @@
-# Foundational Agentic Governance Framework for Financial Services (FAGF-FS)
-**Version: 1.1.0-Stable**
+# Safeguards for Agentic Finance at Runtime (SAFR)
+**Version: 2.0.0** | MAS Industry White Paper Reference Implementation
 
 ## 1. Introduction & Purpose
-The **Foundational Agentic Governance Framework for Financial Services (FAGF-FS)** is a standardized specification designed to provide architectural blueprints and operational mandates for the safe deployment of autonomous AI agents in financial ecosystems.
 
-As AI agents transition from advisory roles to transactional execution, FAGF-FS provides the necessary **immutability** and **interpretability** to ensure every movement of capital is governed by both human-defined policy and regulatory mandates.
+**SAFR (Safeguards for Agentic Finance at Runtime)** is a governance framework published by the Monetary Authority of Singapore (MAS) that defines how AI agents in financial services can carry out tasks safely, securely, and reliably. SAFR provides governance checkpoints that verify and record an AI agent's proposed actions before execution occurs.
+
+SAFR builds on MAS Project MindForge's AI Risk Management toolkit and extends those principles specifically to autonomous agent actions at runtime.
 
 ### 1.1 Core Objectives
-- **Risk Mitigation**: Prevent runaway spending, fraudulent redirections, and logic-based exploits.
-- **Regulatory Parity**: Map existing financial laws (e.g., MAS, GDPR, Dodd-Frank) into executable code.
-- **Operational Transparency**: Ensure every autonomous decision has a verifiable audit trail and logic trace.
-- **Risk Governance Alignment**: Integrate MAS Project MindForge risk management practices for comprehensive AI risk oversight across 7 dimensions.
+- **Policy-Bound Execution**: All agent actions must comply with pre-configured institutional controls before they are carried out.
+- **Real-Time Validation**: Governance checks occur before execution, not after — making post-execution auditing insufficient on its own.
+- **Auditability**: Every governance decision is captured in a tamper-evident audit log, including the proposed action, the rules applied, and the outcome.
+- **Interoperability**: The framework works across agent architectures through native integration or a gateway model that intercepts API calls from existing agents.
 
-### 1.2 Mandates vs. Guardrails
-This framework distinguishes between deterministic and probabilistic safety measures:
+### 1.2 Safeguards vs. Guardrails
+This framework distinguishes between two categories of safety measures:
 
-- **Mandates**: Atomic, deterministic rules (non-probabilistic). They are the "Financial Laws" enforced by the Validator (e.g., spending limits).
-- **Guardrails**: Probabilistic or behavioral safety measures (e.g., content filtering, tone of voice) usually enforced at the LLM gateway.
+- **Safeguards (SAFR Controls)**: Atomic, deterministic rules enforced by the Disposition Engine before execution (e.g., spending limits, category blocks). Non-probabilistic.
+- **Guardrails**: Probabilistic or behavioral safety measures (e.g., content filtering, tone of voice) usually enforced at the LLM gateway layer.
 
-**FAGF-FS focuses primarily on the Mandate layer to ensure absolute regulatory compliance.**
+**SAFR focuses on the deterministic control layer to ensure absolute regulatory compliance at the moment of action.**
 
-### 1.3 MindForge Risk Management Overlay
-FAGF-FS mandates provide deterministic transactional enforcement -- the "inner loop" of AI governance. **MAS Project MindForge** provides the broader organizational risk governance framework -- the "outer loop" -- that contextualizes these mandates within a comprehensive AI risk management practice.
+### 1.3 Relationship to MindForge and FEAT
+
+SAFR controls provide runtime transactional enforcement — the "inner loop" of AI governance. **MAS Project MindForge** provides the broader organizational risk governance framework — the "outer loop" — that contextualizes these controls within a comprehensive AI risk management practice.
 
 The relationship is layered:
-- **Mandates** (FAGF-FS): Atomic, deterministic controls that block, approve, or escalate individual transactions in real time.
-- **Risk Dimensions** (MindForge): The 7 organizational risk categories (Accountability, Monitoring, Transparency, Fairness, Legal, Ethics, Cyber Security) that inform *why* mandates exist and *how* they should be calibrated.
+- **SAFR Controls Repository**: Atomic, deterministic controls that reject, auto-execute, or escalate individual agent actions in real time.
+- **Risk Dimensions (MindForge)**: The 7 organizational risk categories (Accountability, Monitoring, Transparency, Fairness, Legal, Ethics, Cyber Security) that inform *why* controls exist and *how* they should be calibrated.
 - **FEAT Principles**: The foundational ethical layer (Fairness, Ethics, Accountability, Transparency) defined by MAS that underpins both frameworks.
 
-This overlay allows institutions to trace any mandate enforcement back to a risk dimension and ethical principle, providing end-to-end governance auditability.
+This overlay allows institutions to trace any disposition decision back to a risk dimension and an ethical principle, providing end-to-end governance auditability.
 
 ---
 
-## 2. Theoretical Architecture
+## 2. SAFR Architecture
 
-FAGF-FS operates on a **Tiered Validation Logic** (TVL) pattern, separating the "Executor" (the AI Agent) from the "Validator" (the Governance Logic).
+### 2.1 Four Core Components
 
-### 2.1 The Validator Pattern
-The Validator is a standalone, deterministic service that sits between the Agent and the Transactional Rails.
+SAFR defines four core components that must be present in any compliant implementation:
+
+| Component | Responsibility |
+| :--- | :--- |
+| **Agent Identity** | Verifies the AI agent's credentials and the authority delegated to it before any action is evaluated |
+| **Controls Repository** | Stores institutional policies, risk parameters, and mandate definitions |
+| **Disposition Engine** | Evaluates proposed actions against the Controls Repository in real time and produces a disposition |
+| **Audit Log** | Creates a tamper-evident record of each governance decision: the proposed action, the rules applied, and the outcome |
+
+### 2.2 Disposition Outcomes
+
+The Disposition Engine produces exactly one of four outcomes for every proposed agent action:
+
+| Disposition | Meaning | Enforcement |
+| :--- | :--- | :--- |
+| **Auto-Execute** | Action passes all controls | Proceeds immediately to financial rail |
+| **Reject** | Action violates a categorical control | Hard-blocked; cannot proceed |
+| **HITL Escalation** | Action exceeds a configurable threshold | Routed to human reviewer before execution |
+| **Flag & Monitor** | Action proceeds but is flagged | Logged with elevated scrutiny; `shadow_log` enforcement |
+
+### 2.3 Four Safeguard Principles
+
+All SAFR-compliant implementations must embed these four principles:
+
+1. **Policy-Bound Execution** — Agents may only act within the boundaries defined in the Controls Repository. Actions outside policy are rejected or escalated before execution.
+2. **Real-Time Validation** — Governance checks run synchronously, before the action reaches the financial rail.
+3. **Auditability** — Every governance decision is written to a tamper-evident audit log with the proposed action, triggered controls, and final disposition.
+4. **Interoperability** — The framework must work across agent architectures. Two integration models are supported:
+   - *Native Integration*: Agents produce governance records internally before acting.
+   - *Gateway Model*: An intercepting layer validates API calls from existing agents.
+
+### 2.4 System Architecture
 
 ```mermaid
 graph TD
-    subgraph ExecutionLayer
+    subgraph AgentLayer
         A[Autonomous AI Agent]
+        AI[Agent Identity]
     end
-    
-    subgraph GovernanceLayer
-        V{Deterministic Validator}
-        S[(Global State Store)]
-        V <--> S
+
+    subgraph SAFRLayer
+        CR[(Controls Repository)]
+        DE{Disposition Engine}
+        AL[(Audit Log)]
+        DE <--> CR
+        DE --> AL
     end
-    
+
     subgraph ApprovalLayer
-        H[Human in the Loop]
+        H[Human Reviewer HITL]
     end
-    
+
     subgraph RailLayer
-        R[Financial Rails / API]
+        R[Financial Rail / API]
     end
 
-    A -- "Proposes Action" --> V
-    V -- "Evaluate Mandates" --> V
-    V -- "Approved" --> R
-    V -- "Flagged / High Risk" --> H
-    H -- "Manual Override" --> R
-    V -- "Blocked" --> A
+    A -- "Proposed Action + Reasoning" --> AI
+    AI -- "Verified Identity + Envelope" --> DE
+    DE -- "Auto-Execute" --> R
+    DE -- "HITL Escalation" --> H
+    H -- "Approved" --> R
+    DE -- "Reject" --> A
 ```
 
-### 2.2 Integration Modalities
-1.  **Synchronous (Block-Before-Commit)**: The Rail Layer rejects any request that does not carry a valid "Governance Signature" from the Validator.
-2.  **Asynchronous (Monitor-and-Kill)**: The Validator monitors the stream and triggers a reversal or pauses the agent if a mandate is breached post-facto.
-
-### 2.3 The Governance Stack
-The framework defines four distinct layers of operation:
-
-| Layer | Responsibility | Output |
-| :--- | :--- | :--- |
-| **Interface** | Normalization of agent payloads. | `GovernanceEnvelope` |
-| **Logic** | Evaluation of deterministic safety rules. | Pass/Fail/HITL |
-| **State** | Contextual historical lookups. | Risk Context |
-| **Rail** | Cryptographic commit of valid actions. | Transaction Hash |
-
-```mermaid
-graph BT
-    subgraph Layers
-        L1[Rail Layer]
-        L2[State Layer]
-        L3[Logic Layer]
-        L4[Interface Layer]
-    end
-    L4 --> L3
-    L3 --> L2
-    L2 --> L1
-    
-    subgraph Data
-        D1[Signed TX]
-        D2[Risk Metrics]
-        D3[Mandate Results]
-        D4[Unified Envelope]
-    end
-    D4 -.-> L4
-    D3 -.-> L3
-    D2 -.-> L2
-    D1 -.-> L1
-```
-
-### 2.4 Validation Lifecycle
-The sequence of events from intent to execution:
+### 2.5 Validation Lifecycle
 
 ```mermaid
 sequenceDiagram
     participant A as AI Agent
-    participant I as Interface Layer
-    participant V as Validation Engine
-    participant S as State Store
-    participant H as Human (HITL)
+    participant AI as Agent Identity
+    participant DE as Disposition Engine
+    participant CR as Controls Repository
+    participant AL as Audit Log
+    participant H as Human Reviewer
     participant R as Financial Rail
 
-    A->>I: Propose Action (Intent + reasoning)
-    I->>V: Unified Governance Envelope
-    V->>S: Fetch Context (Merchant/History)
-    S-->>V: Risk Profile
-    V->>V: Run Mandate Suite
-    
-    alt Validation Passed
-        V->>R: Commit Transaction
-        R-->>A: Success Receipt
-    else HITL Threshold Reached
-        V->>H: Approval Request + Trace
-        H-->>V: Approved
-        V->>R: Commit Transaction
-    else Blocked
-        V-->>A: Rejection + Reason
+    A->>AI: Proposed Action + Reasoning
+    AI->>DE: Verified Governance Envelope
+    DE->>CR: Fetch Applicable Controls
+    CR-->>DE: Control Parameters
+    DE->>DE: Evaluate Controls Suite
+
+    alt Auto-Execute
+        DE->>AL: Log disposition (approved)
+        DE->>R: Commit Action
+    else HITL Escalation
+        DE->>AL: Log disposition (hitl)
+        DE->>H: Escalation Request + Audit Trace
+        H-->>DE: Approved
+        DE->>R: Commit Action
+    else Reject
+        DE->>AL: Log disposition (rejected)
+        DE-->>A: Rejection + Reason
     end
 ```
 
 ---
 
-## 3. The Mandate Framework (Policy Layer)
+## 3. Controls Repository (Policy Layer)
 
-A **Mandate** is the highest level of policy defined in FAGF. It is an abstract safety requirement that is later realized by concrete governance code.
+The **Controls Repository** is the institutional source of truth for all policy definitions. It contains a set of named controls, each specifying what is allowed, under what conditions, and what enforcement action to take when a threshold is crossed.
 
-### 3.1 Taxonomy of Mandates
-- **AuthZ Mandates**: Focus on "Who" and "Where" (Merchant reputation, Channel security).
-- **Spending Mandates**: Focus on "How Much" (Thresholds, Aggregates).
-- **Velocity Mandates**: Focus on "How Fast" (Cooldowns, Frequency).
-- **Reasoning Mandates**: Focus on "Why" (Strategic alignment, Semantic consistency).
+### 3.1 Control Taxonomy
 
-### 3.2 Compliance Mapping
-FAGF provides a standard template for mapping regulatory requirements:
-
-| Regulatory Requirement | FAGF Mandate | Implementation |
+| Category | Focus | Examples |
 | :--- | :--- | :--- |
-| **AML / Fraud Prevention** | `verify-merchant-01` | Trust-list lookup & IP proximity check. |
-| **Consumer Protection** | `spend-limit-daily` | Aggregate daily delta monitoring. |
-| **Operational Risk** | `velocity-burst-limit` | Leaky bucket rate limiting. |
+| **Authorization Controls** | Who and Where | Agent identity, merchant trust, payment channel restrictions |
+| **Spending Controls** | How Much | Transaction limits, daily aggregate caps |
+| **Velocity Controls** | How Fast | Rate limiting, cooldown periods |
+| **Category Controls** | What Type | Blocked category lists |
+
+### 3.2 Standard SAFR Control IDs
+
+Controls in the Controls Repository follow the naming convention `safr-[category]-[nn]`:
+
+| Control ID | Category | Default Enforcement |
+| :--- | :--- | :--- |
+| `safr-auth-01` | authorization | `approval_required` (new merchant) |
+| `safr-auth-02` | authorization | `approval_required` (payment channel) |
+| `safr-limit-01` | spending_limit | `approval_required` (confirmation threshold) |
+| `safr-limit-02` | spending_limit | `block` (daily aggregate hard cap) |
+| `safr-velocity-01` | velocity | `approval_required` (rate limit per hour) |
+| `safr-velocity-02` | velocity | `approval_required` (cooldown between actions) |
+| `safr-cat-01` | category_restriction | `block` (forbidden categories) |
+
+### 3.3 Regulatory Compliance Mapping
+
+| Regulatory Requirement | SAFR Control | Implementation |
+| :--- | :--- | :--- |
+| **AML / Fraud Prevention** | `safr-auth-01` | Trust-list lookup and new-merchant verification |
+| **Consumer Protection** | `safr-limit-02` | Daily aggregate spending cap |
+| **Operational Risk** | `safr-velocity-01` | Rate limiting per hour |
+| **Restricted Activities** | `safr-cat-01` | Categorical blocklist enforcement |
+| **Payment Channel Security** | `safr-auth-02` | Approved payment method restrictions |
 
 ---
 
-## 4. Agent-Centric Safety (Logic Layer)
+## 4. Agent-Centric Safety Considerations
 
-Unlike standard payments logic, Agentic Governance must account for the unique failure modes of Large Language Models (LLMs).
+Unlike standard payments logic, agentic governance must account for the unique failure modes of Large Language Models (LLMs).
 
 ### 4.1 Reasoning Consistency Verification
-Governance logic must compare the agent's **Reasoning Payload** against the **Transaction Fragment**.
-*   *Fail Case*: Agent says "Paying office rent" but the merchant is "Online Gambling Ltd."
-*   *Action*: Immediate high-severity intervention.
+The Disposition Engine must compare the agent's **Reasoning Payload** against the **Transaction Fragment**.
+- *Fail Case*: Agent says "Paying office rent" but the merchant is a gambling platform.
+- *Action*: `safr-cat-01` block or HITL escalation depending on category match.
 
 ### 4.2 Hallucination Filtering
-The Validator must proactively verify that the entities mentioned by the agent (Merchant IDs, Bank Codes) exist in the **State Store**. "Hallucinated" merchants are treated as potential spoofing attempts.
+The Disposition Engine must verify that entities mentioned by the agent (merchant IDs, payment destinations) exist in the Controls Repository trust lists. Unverified entities trigger `safr-auth-01` escalation.
+
+### 4.3 Agent Identity Verification
+Before any action is evaluated, the agent's identity and delegated authority must be confirmed. An agent acting outside its authorized scope is rejected regardless of whether the action would otherwise pass the Controls Repository.
 
 ---
 
 ## 5. Data Models (Technical Layer)
 
-FAGF-FS-compliant implementations MUST adhere to the following core data structures.
+SAFR-compliant implementations MUST adhere to the following core data structures.
 
 ### 5.1 The Governance Envelope
-Every transaction proposal must be wrapped in a Governance Envelope:
+Every proposed agent action must be wrapped in a Governance Envelope before reaching the Disposition Engine:
 
 ```typescript
 interface GovernanceEnvelope {
   transaction: {
     amount: number;
     destination: string;
+    merchantName: string;
     category: string;
     timestamp: number;
+    paymentMethod: string;
   };
-  reasoning: string;    // Human/Logic readable explanation from the agent
+  reasoning: string;    // Agent's explanation, captured in the audit log
   context: {
-    history_depth: number;
-    risk_score: number;
+    isNewMerchant: boolean;
+    historyDepth: number;
+    riskScore: number;
   };
 }
 ```
 
-### 5.2 Constraint Definition Structure
+### 5.2 Controls Repository Entry (GovernanceMandate)
 ```typescript
-interface GovernanceMandate {
-  id: string;           // Standard FAGF ID (e.g., 'fagf-limit-01')
-  parameter: any;       // The limit value
+interface GovernanceMandate<T = any> {
+  id: string;           // SAFR control ID (e.g., 'safr-limit-01')
+  category: 'authorization' | 'spending_limit' | 'category_restriction' | 'velocity';
+  parameter: T;         // The control parameter value
   enforcement: 'block' | 'approval_required' | 'shadow_log';
-  riskDisclosure: string; // The specific threat being addressed
+  severity: 'low' | 'medium' | 'high';
+  riskDisclosure: string; // The specific threat being mitigated
+  description: string;
 }
 ```
 
-### 5.3 MindForge Data Structures
+### 5.3 Disposition Engine Result
+```typescript
+interface ValidationResult {
+  allowed: boolean;
+  requiresApproval: boolean;  // true = HITL Escalation
+  reason?: string;            // Human-readable disposition explanation
+  mitigationRisk?: string;    // Risk disclosure from the triggered control
+  severity?: 'low' | 'medium' | 'high';
+  triggeredControls: string[]; // IDs of controls that fired (for audit log)
+}
+```
 
+### 5.4 MindForge Risk Dimension Assessment
 ```typescript
 interface RiskDimensionAssessment {
   dimension: MindForgeRiskDimension;  // 7 risk dimension identifiers
   label: string;
-  score: number;            // 1-5 risk maturity score
+  score: number;              // 1-5 risk maturity score
   rationale: string;
-  controls: string[];
-  linkedMandateIds: string[]; // Cross-references to fagf-* mandate IDs
+  controls: string[];         // Active controls for this dimension
+  linkedMandateIds: string[]; // Cross-references to safr-* control IDs
 }
 
 interface RiskMaterialityAssessment {
-  impact: number;           // 1-5
-  complexity: number;       // 1-5
-  reliance: number;         // 1-5
-  overallScore: number;     // impact * complexity * reliance (1-125)
+  impact: number;             // 1-5
+  complexity: number;         // 1-5
+  reliance: number;           // 1-5
+  overallScore: number;       // impact × complexity × reliance (1-125)
   tier: 'low' | 'medium' | 'high' | 'critical';
 }
+```
 
+### 5.5 AI System Inventory Entry
+```typescript
 interface AISystemEntry {
-  id: string;
+  id: string;                 // e.g., 'ais-safr-001'
   name: string;
   description: string;
-  lifecycleStage: LifecycleStage;
+  lifecycleStage: 'design' | 'data_collection' | 'training' | 'deployment' | 'monitoring' | 'retirement';
   dataUsed: string[];
-  dependencies: string[];
+  dependencies: string[];     // e.g., ['MAS SAFR White Paper', 'MAS Project MindForge']
   riskMateriality: RiskMaterialityAssessment;
   validationStatus: 'validated' | 'pending' | 'not_assessed';
   owner: string;
   featAlignment: FEATAlignment;
   lifecycleControls: LifecycleControl[];
 }
-
-interface FEATPrinciple {
-  id: string;
-  pillar: 'fairness' | 'ethics' | 'accountability' | 'transparency';
-  name: string;
-  description: string;
-  implemented: boolean;
-  evidenceNotes: string;
-  linkedMandateIds: string[];
-}
 ```
 
 ---
 
-## 6. Implementation Scenarios
+## 6. MindForge Risk Management Integration
 
-### 6.1 Low-Trust (Zero-Knowledge) Onboarding
-*   **Trigger**: Agent interacts with a merchant not in the historical `State Store`.
-*   **Protocol**: Intercept -> Elevate to HITL -> Add to Trust List upon approval.
+### 6.1 Risk Dimensions
+MAS Project MindForge defines 7 AI risk management dimensions. Each dimension maps to one or more SAFR controls:
 
-### 6.2 Bot-Net / Runaway Detection
-*   **Trigger**: 10 transactions attempted in 2 seconds.
-*   **Protocol**: Trigger `velocity-burst` -> Kill Process -> Alert Admin.
-
----
-
-## 7. Extending the Framework
-Projects can extend FAGF by defining custom **Namespace Mandates**. These must follow the naming convention `ext-[project]-[mandate-id]`.
-
-### 7.1 Best Practices for Extension
-- Never disable `fagf-blocklist` mandates in production.
-- Always use a secondary "Verifier" model for high-value extensions.
-- Ensure all custom mandates provide a `riskDisclosure` for auditability.
-
-## 8. MindForge Risk Management Integration
-
-### 8.1 Risk Dimensions
-MAS Project MindForge defines 7 AI risk management dimensions. Each dimension maps to one or more FAGF-FS mandates:
-
-| MindForge Dimension | Linked FAGF-FS Mandates |
+| MindForge Dimension | Linked SAFR Controls |
 | :--- | :--- |
-| **Accountability & Governance** | All 7 mandates (fagf-auth-01, fagf-auth-02, fagf-limit-01, fagf-limit-02, fagf-velocity-01, fagf-velocity-02, fagf-cat-01) |
-| **Monitoring & Stability** | fagf-velocity-01, fagf-velocity-02 |
-| **Transparency & Explainability** | fagf-limit-01, fagf-limit-02 |
-| **Fairness & Bias** | fagf-cat-01 |
-| **Legal & Regulatory** | fagf-cat-01, fagf-auth-01, fagf-limit-02 |
-| **Ethics & Impact** | fagf-cat-01, fagf-auth-01 |
-| **Cyber & Data Security** | fagf-auth-01, fagf-auth-02 |
+| **Accountability & Governance** | All 7 controls (safr-auth-01, safr-auth-02, safr-limit-01, safr-limit-02, safr-velocity-01, safr-velocity-02, safr-cat-01) |
+| **Monitoring & Stability** | safr-velocity-01, safr-velocity-02 |
+| **Transparency & Explainability** | safr-limit-01, safr-limit-02 |
+| **Fairness & Bias** | safr-cat-01 |
+| **Legal & Regulatory** | safr-cat-01, safr-auth-01, safr-limit-02 |
+| **Ethics & Impact** | safr-cat-01, safr-auth-01 |
+| **Cyber & Data Security** | safr-auth-01, safr-auth-02 |
 
 Each dimension is scored on a 1-5 maturity scale with associated controls and rationale.
 
-### 8.2 Risk Materiality Assessment
-The three-axis scoring model determines the level of governance controls required:
+### 6.2 Risk Materiality Assessment
+The three-axis scoring model determines the level of SAFR controls required:
 
 - **Impact** (1-5): Potential severity of adverse outcomes
 - **Complexity** (1-5): Technical sophistication of the AI system
 - **Reliance** (1-5): Degree of business dependency on the AI system
 
-**Overall Score** = Impact × Complexity × Reliance (range: 1-125)
+**Overall Score** = Impact × Complexity × Reliance (range: 1–125)
 
 | Tier | Score Range | Control Requirement |
 | :--- | :--- | :--- |
-| Low | 1-15 | Standard controls, periodic review |
-| Medium | 16-40 | Enhanced controls, regular monitoring |
-| High | 41-80 | Comprehensive controls, continuous monitoring |
-| Critical | 81-125 | Maximum controls, board-level oversight |
+| Low | 1–15 | Standard controls, periodic review |
+| Medium | 16–40 | Enhanced controls, regular monitoring |
+| High | 41–80 | Comprehensive controls, continuous monitoring, senior management oversight |
+| Critical | 81–125 | Maximum controls, board-level oversight, independent validation, real-time monitoring |
 
-### 8.3 FEAT Principles Alignment
-The 14 FEAT principles across 4 pillars provide the ethical foundation:
+### 6.3 FEAT Principles Alignment
+The 14 FEAT principles across 4 pillars provide the ethical foundation for SAFR:
 
 - **Fairness** (3 principles): Justifiable outcomes, data representativeness, outcome monitoring
-- **Ethics** (4 principles): Ethical standards, human wellbeing, proportionate response, stakeholder assessment
-- **Accountability** (4 principles): Clear ownership, audit trail, human override, remediation
-- **Transparency** (3 principles): Decision explainability, model documentation, customer disclosure
+- **Ethics** (4 principles): Ethical standards compliance, human wellbeing priority, proportionate response, stakeholder impact assessment
+- **Accountability** (4 principles): Clear ownership, audit trail, human override capability, remediation process
+- **Transparency** (3 principles): Decision explainability, model documentation, disclosure to customers
 
-Each principle links to relevant FAGF-FS mandates and requires evidence of implementation.
+Each principle links to relevant SAFR controls and requires documented evidence of implementation.
 
-### 8.4 AI System Inventory
-All AI systems under governance must maintain an inventory record containing:
+### 6.4 AI System Inventory
+All AI systems under SAFR governance must maintain an inventory record containing:
 - System identification (id, name, description)
-- Current lifecycle stage (design, data_collection, training, deployment, monitoring, retirement)
-- Data sources and dependencies
+- Current lifecycle stage
+- Data sources and dependencies (including SAFR White Paper and MindForge)
 - Risk materiality assessment
 - Validation status
 - System owner
 - FEAT alignment score
 
-### 8.5 Lifecycle Controls
+### 6.5 Lifecycle Controls
 Controls are defined across 6 lifecycle stages:
 
 | Stage | Example Controls |
 | :--- | :--- |
-| Design | Risk appetite definition, regulatory requirement mapping |
-| Data Collection | Data quality validation, bias detection |
-| Training | Performance benchmarking, adversarial testing |
-| Deployment | Mandate enforcement activation, production readiness review |
-| Monitoring | Real-time transaction monitoring, drift detection |
-| Retirement | Graceful decommissioning, data retention compliance |
+| Design | Risk appetite definition, regulatory requirement mapping, stakeholder impact assessment |
+| Data Collection | Data quality validation, bias detection in training data |
+| Training | Performance benchmarking, adversarial robustness testing |
+| Deployment | SAFR Controls Repository activation, canary deployment with rollback, production readiness review |
+| Monitoring | Real-time action monitoring, drift detection and alerting, periodic model revalidation |
+| Retirement | Graceful decommissioning plan, data retention compliance |
 
 ---
 
-## 9. Acknowledgements
-The development of FAGF-FS was made possible through the collaboration of AI safety researchers, financial architects, and regulatory compliance experts dedicated to the secure advancement of autonomous agents.
+## 7. Implementation Scenarios
 
-## 10. References & Foundational Standards
-The following standards and guidelines were instrumental in the creation of this framework:
+### 7.1 Low-Trust (Zero-Knowledge) Onboarding
+- **Trigger**: Agent interacts with a merchant not in the Controls Repository trust list.
+- **Protocol**: `safr-auth-01` fires → HITL Escalation → Human adds to trust list upon approval → Audit log records the onboarding decision.
 
-- **Monetary Authority of Singapore (MAS)**: 
-    - *User Protection Guidelines (E-Payments User Protection Advisory)*.
-    - *Technology Risk Management (TRM) Guidelines*.
-- **Agentic Payment Protocol 2 (AP2)**: The underlying communication and state-machine standard for autonomous financial agents.
-- **ISO 20022**: For financial messaging structure and compatibility.
-- **GDPR & Singapore PDPA**: For data privacy and agentic "reasoning" transparency requirements.
-- **MAS Project MindForge**: AI Risk Management Toolkit for financial institutions.
-- **MindForge AI Risk Management Executive Handbook** (Nov 2025): Strategic guidance for board and senior management.
-- **MindForge AI Risk Management Operationalisation Handbook** (Jan 2026): Practical implementation guidance.
-- **MAS FEAT Principles** (2018): Fairness, Ethics, Accountability, and Transparency principles for AI in finance.
-- **Veritas Initiative** (2020-2023): Methodology for assessing FEAT compliance.
+### 7.2 Runaway Agent Detection
+- **Trigger**: Agent exceeds rate limit (e.g., 10 transactions in rapid succession).
+- **Protocol**: `safr-velocity-01` fires → HITL Escalation → Admin alerted → Cooldown enforced via `safr-velocity-02`.
+
+### 7.3 Categorical Compliance Block
+- **Trigger**: Agent attempts action in a restricted category (gambling, unlicensed crypto).
+- **Protocol**: `safr-cat-01` fires → Hard Reject → Reason logged in audit log → Agent receives rejection with explanation.
 
 ---
+
+## 8. Extending the Framework
+
+Institutions can extend SAFR by defining custom controls in the Controls Repository. Custom controls MUST follow the naming convention `ext-[institution]-[control-id]`.
+
+### 8.1 Best Practices for Extension
+- Never disable `safr-cat-01` (category blocklist) controls in production.
+- All custom controls must provide a `riskDisclosure` field for audit log completeness.
+- Custom controls should be linked to MindForge risk dimensions for governance traceability.
+- Use a secondary verification step for controls that govern high-value or irreversible actions.
+
+---
+
+## 9. References & Foundational Standards
+
+- **MAS SAFR White Paper** (2026): *Safeguards for Agentic Finance at Runtime* — primary specification source.
+- **MAS Project MindForge AI Risk Management Toolkit**: Strategic and operational guidance for AI risk management in financial institutions.
+  - *Executive Handbook* (Nov 2025): Board and senior management guidance.
+  - *Operationalisation Handbook* (Jan 2026): Practical implementation guidance.
+- **MAS FEAT Principles** (2018): Fairness, Ethics, Accountability, and Transparency principles for AI in Singapore's financial sector.
+- **Veritas Initiative** (2020–2023): Methodology for assessing FEAT compliance.
+- **MAS Technology Risk Management (TRM) Guidelines**: Technology risk management requirements for financial institutions.
+- **Singapore PDPA**: Data privacy and agentic reasoning transparency requirements.
+- **MAS AML/CFT Requirements**: Anti-money laundering and counter-financing of terrorism obligations.
+- **ISO 20022**: Financial messaging structure and compatibility standards.
+
+---
+
 *End of Specification*
-*Published by: Agentic Financial Standards Org (Conceptual)*
+*Aligned with the MAS SAFR White Paper (2026)*
